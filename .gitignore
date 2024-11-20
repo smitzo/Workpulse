@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+data/*.sqlite3
+data/*.sqlite3-*
+data/app_config.json
+employee_analytics_report.html
