@@ -102,3 +102,17 @@ export type OptionsPayload = {
   projects: string[];
   statuses: string[];
 };
+
+export type Filters = {
+  date_from?: string;
+  date_to?: string;
+  department?: string;
+  employee_id?: string;
+  task_type?: string;
+  project?: string;
+};
+
+export type InsightsPayload = {
+  summary: string;
+  insights: Insight[];
+};

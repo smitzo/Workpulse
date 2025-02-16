@@ -1,4 +1,4 @@
-import type { AuthPayload } from "@/types/api";
+import type { AuthPayload, Dashboard, Filters, InsightsPayload, OptionsPayload } from "@/types/api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/api";
 
@@ -61,4 +61,40 @@ export function reportUrl(token: string, query = "") {
   const params = new URLSearchParams(query);
   params.set("token", token);
   return `${API_BASE_URL}/report/?${params.toString()}`;
+}
+
+export function queryString(filters: Filters) {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value && value !== "All") {
+      params.set(key, value);
+    }
+  });
+  return params.toString();
+}
+
+export function getOptions(token: string) {
+  return apiFetch<OptionsPayload>("/options/", { token });
+}
+
+export function getDashboard(token: string, filters: Filters) {
+  const query = queryString(filters);
+  return apiFetch<Dashboard>(`/dashboard/${query ? `?${query}` : ""}`, { token });
+}
+
+export function getInsights(token: string, filters: Filters) {
+  const query = queryString(filters);
+  return apiFetch<InsightsPayload>(`/insights/${query ? `?${query}` : ""}`, { token });
+}
+
+export async function getReportHtml(token: string, filters: Filters) {
+  const query = queryString(filters);
+  const response = await fetch(`${API_BASE_URL}/report/${query ? `?${query}` : ""}`, {
+    headers: { Authorization: `Token ${token}` },
+    cache: "no-store"
+  });
+  if (!response.ok) {
+    throw new ApiError(await response.text(), response.status);
+  }
+  return response.text();
 }
