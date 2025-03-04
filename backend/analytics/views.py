@@ -158,7 +158,7 @@ class WorkLogViewSet(ModelViewSet):
 
     def get_queryset(self):
         service = AnalyticsService()
-        return service.work_log_queryset(filters_from_request(self.request))[:1200]
+        return service.work_log_queryset(filters_from_request(self.request))
 
     def perform_create(self, serializer):
         if user_role(self.request.user) == UserProfile.ROLE_ADMIN:
@@ -180,7 +180,7 @@ class AttendanceViewSet(ModelViewSet):
 
     def get_queryset(self):
         service = AnalyticsService()
-        return service.attendance_queryset(filters_from_request(self.request))[:1200]
+        return service.attendance_queryset(filters_from_request(self.request))
 
     def perform_create(self, serializer):
         if user_role(self.request.user) == UserProfile.ROLE_ADMIN:

@@ -1,4 +1,4 @@
-import type { AuthPayload, Dashboard, Filters, InsightsPayload, OptionsPayload } from "@/types/api";
+import type { Attendance, AuthPayload, Dashboard, Employee, Filters, InsightsPayload, OptionsPayload, WorkLog } from "@/types/api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/api";
 
@@ -97,4 +97,50 @@ export async function getReportHtml(token: string, filters: Filters) {
     throw new ApiError(await response.text(), response.status);
   }
   return response.text();
+}
+
+export function getEmployees(token: string) {
+  return apiFetch<Employee[]>("/employees/", { token });
+}
+
+export function saveEmployee(token: string, payload: Record<string, string>) {
+  return apiFetch<Employee>("/employees/", {
+    method: "POST",
+    token,
+    body: JSON.stringify(payload)
+  });
+}
+
+export function deleteEmployee(token: string, employeeId: string) {
+  return apiFetch<void>(`/employees/${employeeId}/`, { method: "DELETE", token });
+}
+
+export function getLogs(token: string, filters: Filters) {
+  const query = queryString(filters);
+  return apiFetch<WorkLog[]>(`/logs/${query ? `?${query}` : ""}`, { token });
+}
+
+export function saveLog(token: string, payload: Record<string, string>) {
+  return apiFetch<WorkLog>("/logs/", {
+    method: "POST",
+    token,
+    body: JSON.stringify(payload)
+  });
+}
+
+export function deleteLog(token: string, id: number) {
+  return apiFetch<void>(`/logs/${id}/`, { method: "DELETE", token });
+}
+
+export function getAttendance(token: string, filters: Filters) {
+  const query = queryString(filters);
+  return apiFetch<Attendance[]>(`/attendance/${query ? `?${query}` : ""}`, { token });
+}
+
+export function saveAttendance(token: string, payload: Record<string, string>) {
+  return apiFetch<Attendance>("/attendance/", {
+    method: "POST",
+    token,
+    body: JSON.stringify(payload)
+  });
 }

@@ -4,6 +4,7 @@ import { BarChart3, LogOut, Moon, RefreshCw, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { DashboardView } from "@/components/DashboardView";
+import { ManagementViews } from "@/components/ManagementViews";
 import { ReportsView } from "@/components/ReportsView";
 import { getDashboard, getInsights, getOptions } from "@/lib/api";
 import type { AuthPayload, Dashboard, Filters, InsightsPayload, OptionsPayload } from "@/types/api";
@@ -174,10 +175,15 @@ export function AppShell({ auth, onLogout }: AppShellProps) {
         ) : active === "dashboard" ? (
           <DashboardView dashboard={dashboard} />
         ) : (
-          <section className="empty-state">
-            <h2>{active[0].toUpperCase() + active.slice(1)} module</h2>
-            <p>This management workspace is added in the next commit.</p>
-          </section>
+          <ManagementViews
+            active={active}
+            filters={filters}
+            options={options}
+            token={auth.token}
+            user={auth.user}
+            setMessage={setMessage}
+            afterChange={() => refresh(filters)}
+          />
         )}
       </section>
     </main>

@@ -482,6 +482,28 @@ th {
   line-height: 1.45;
 }
 
+.management-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.form-panel .form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  gap: 12px;
+  padding: 14px;
+  align-items: end;
+}
+
+.danger-btn {
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 7px;
+  color: #ffffff;
+  background: var(--red);
+  font-weight: 800;
+}
+
 @media (max-width: 920px) {
   .auth-screen,
   .app-shell {
@@ -507,7 +529,8 @@ th {
   }
 
   .dashboard-grid,
-  .reports-grid {
+  .reports-grid,
+  .form-panel .form-grid {
     grid-template-columns: 1fr;
   }
 }
