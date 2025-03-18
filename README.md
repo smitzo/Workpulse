@@ -1,81 +1,114 @@
-# Employee Data Analytics App
+# Employee Data Analytics Platform
 
-Analytics app for employee performance, attendance, workload,
-overtime, productivity, project/task mix, ideal-vs-actual comparison, and
-sunburst work distribution.
+A full-stack employee analytics platform with a Django REST API, Postgres/Neon
+support, token authentication, retained demo data, and a Next.js dashboard with
+light and dark themes.
 
-The main app is a responsive browser UI backed by Python's standard-library HTTP
-server and SQLite. A Tkinter desktop UI is still available as a fallback.
+## What It Includes
 
-## Run
+- Django backend with modular analytics models, services, serializers, and API views.
+- Postgres-ready configuration through `DATABASE_URL`; Neon works with `sslmode=require`.
+- Token authentication, login, signup, and a one-click demo entry.
+- Deterministic demo data for employees, work logs, attendance, projects, task groups, users, and ideal task times.
+- Next.js frontend with dashboard KPIs, charts, reports, employee management, timesheets, attendance, filters, and theme toggle.
+- Admin and employee scoping. Admins see all data; employees are restricted to their own records.
+- HTML report export from the API.
 
-```bash
-python3 main.py --reset-sample
+## Demo Access
+
+The login page includes an **Explore demo dashboard** button. It seeds demo data
+if needed and signs in as the demo admin so reviewers can immediately see the
+dashboard and reports.
+
+Manual credentials are also available after running `seed_demo`:
+
+- Admin: `admin` / `admin123`
+- Employee: `EMP001` / `pass123`
+
+## Project Structure
+
+```text
+backend/
+  analytics/        Django app: models, services, API views, serializers, demo seed command
+  config/           Django settings, URLs, ASGI/WSGI
+  requirements.txt  Backend dependencies
+frontend/
+  app/              Next.js App Router entry
+  components/       Reusable UI modules
+  lib/              API client
+  types/            Shared TypeScript API types
+docs/
+  API.md            REST API reference
+  DEPLOYMENT.md     Neon and deployment guide
 ```
 
-This starts a local web app and opens it in your browser. The app stores local
-data in `data/employee_analytics.sqlite3`, creating the database automatically.
+Legacy Tkinter and local HTTP files are still present under `app/` for reference
+while the project is being migrated; the deployable product is `backend/` plus
+`frontend/`.
 
-Run without opening a browser:
+## Local Development
 
-```bash
-python3 main.py --reset-sample --no-browser
-```
-
-Run the desktop fallback:
+Backend:
 
 ```bash
-python3 main.py --reset-sample --desktop
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+python manage.py migrate
+python manage.py seed_demo --reset
+python manage.py runserver 127.0.0.1:8000
 ```
 
-## Demo Login
+Frontend:
 
-Admin:
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+npm run dev
+```
 
-- Username: `admin`
-- Password: `admin123`
+Open `http://localhost:3000`.
 
-Employee:
+## Neon Postgres
 
-- Username: `EMP001`
-- Password: `pass123`
+Set `DATABASE_URL` in `backend/.env` or your hosting provider:
 
-Admins can see all employee analytics, reports, employee management, attendance,
-timesheets, and the analytics builder. Normal employees only see their own
-attendance and timesheet/work-hour screens.
+```bash
+DATABASE_URL=postgresql://USER:PASSWORD@HOST.neon.tech/DBNAME?sslmode=require
+```
 
-## Demo Features
+Then run:
 
-- Dashboard KPIs for employees, hours, productivity, attendance, overtime,
-  absences, late minutes, and work-log count.
-- Admin analytics builder with dropdowns for graph type, metric, grouping, and
-  employee selection.
-- Responsive browser graphs with scrollable chart containers, including bar,
-  trend, donut, heatmap, actual-vs-ideal, and sunburst views.
-- Filterable analytics by date range, department, employee, task, and project.
-- Employee maintenance screen with add/update/delete and searchable table.
-- Work-log screen with add/delete.
-- Attendance screen with add/update, table view, attendance mix, and late-minute
-  analysis.
-- Insights section with executive summary and performance table.
-- HTML report export for Demo presentation.
-- Deterministic sample data with employees, attendance, work logs, projects,
-  task types, work groups, ideal times, productivity scores, overtime, leave,
-  and absences.
+```bash
+python manage.py migrate
+python manage.py seed_demo --reset
+```
 
-## Structure
+## Useful Commands
 
-- `main.py` - application entrypoint.
-- `activity_log.py` - compatibility launcher.
-- `app/data_store.py` - SQLite schema, queries, sample-data
-  seeding, exports, sunburst data, work groups, and ideal times.
-- `app/sample_data.py` - deterministic demo dataset.
-- `app/analytics_service.py` - dashboard and insight logic.
-- `app/reporting.py` - HTML report generator.
-- `app/web.py` - local HTTP API and web launcher.
-- `app/web_assets/index.html` - responsive web dashboard.
-- `app/ui.py` - Tkinter desktop fallback UI.
-- `app/settings.py` - local non-secret app settings.
+```bash
+# Backend checks
+cd backend
+python manage.py check
+python manage.py migrate
+python manage.py seed_demo --reset
 
-The previous CustomTkinter/MySQL prototype files were removed after their useful
-features were migrated into this modular SQLite architecture.
+# Frontend checks
+cd frontend
+npm run typecheck
+npm run build
+```
+
+## Deployment Shape
+
+Deploy the backend and frontend as separate services:
+
+- Backend: Django/Gunicorn service with `backend/requirements.txt`, `DATABASE_URL`, and `gunicorn config.wsgi:application`.
+- Frontend: Next.js service with `frontend/package.json` and `NEXT_PUBLIC_API_BASE_URL=https://your-api-domain/api`.
+- CORS: add the frontend origin to `CORS_ALLOWED_ORIGINS` on the backend.
+- Hosts: add the backend domain to `DJANGO_ALLOWED_HOSTS`.
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the full checklist.
