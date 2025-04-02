@@ -57,9 +57,9 @@ class WorkLog(models.Model):
     class Meta:
         ordering = ["-log_date", "-id"]
         indexes = [
-            models.Index(fields=["employee", "log_date"]),
-            models.Index(fields=["project", "log_date"]),
-            models.Index(fields=["task_type", "log_date"]),
+            models.Index(fields=["employee", "log_date"], name="analytics_w_employe_d19759_idx"),
+            models.Index(fields=["project", "log_date"], name="analytics_w_project_6baa14_idx"),
+            models.Index(fields=["task_type", "log_date"], name="analytics_w_task_ty_b03ef2_idx"),
         ]
 
     def __str__(self) -> str:

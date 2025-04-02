@@ -4,10 +4,13 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from django.contrib.auth.models import AnonymousUser, User
-from django.db.models import Avg, Count, Q, Sum
+from django.db.models import Avg, Count, DecimalField, FloatField, IntegerField, Q, Sum
 from django.db.models.functions import Coalesce
 
 from analytics.models import Attendance, Employee, IdealTime, UserProfile, WorkGroupItem, WorkLog
+
+
+HOURS_FIELD = DecimalField(max_digits=12, decimal_places=2)
 
 
 @dataclass(frozen=True)
@@ -84,15 +87,15 @@ class AnalyticsService:
 
         log_stats = logs.aggregate(
             logs=Count("id"),
-            hours=Coalesce(Sum("hours"), Decimal("0")),
-            avg_score=Coalesce(Avg("productivity_score"), Decimal("0")),
-            overtime=Coalesce(Sum("overtime_hours"), Decimal("0")),
+            hours=Coalesce(Sum("hours"), Decimal("0"), output_field=HOURS_FIELD),
+            avg_score=Coalesce(Avg("productivity_score"), 0.0, output_field=FloatField()),
+            overtime=Coalesce(Sum("overtime_hours"), Decimal("0"), output_field=HOURS_FIELD),
         )
         attendance_stats = attendance.aggregate(
             rows=Count("id"),
             present=Count("id", filter=Q(status=Attendance.STATUS_PRESENT)),
             absent=Count("id", filter=Q(status=Attendance.STATUS_ABSENT)),
-            late_minutes=Coalesce(Sum("late_minutes"), 0),
+            late_minutes=Coalesce(Sum("late_minutes"), 0, output_field=IntegerField()),
         )
         attendance_rate = 0
         if attendance_stats["rows"]:
@@ -198,9 +201,9 @@ class AnalyticsService:
             self.employee_queryset(filters)
             .annotate(
                 log_count=Count("work_logs", filter=log_filter),
-                total_hours=Coalesce(Sum("work_logs__hours", filter=log_filter), Decimal("0")),
-                avg_productivity=Coalesce(Avg("work_logs__productivity_score", filter=log_filter), Decimal("0")),
-                overtime_hours=Coalesce(Sum("work_logs__overtime_hours", filter=log_filter), Decimal("0")),
+                total_hours=Coalesce(Sum("work_logs__hours", filter=log_filter), Decimal("0"), output_field=HOURS_FIELD),
+                avg_productivity=Coalesce(Avg("work_logs__productivity_score", filter=log_filter), 0.0, output_field=FloatField()),
+                overtime_hours=Coalesce(Sum("work_logs__overtime_hours", filter=log_filter), Decimal("0"), output_field=HOURS_FIELD),
                 worked_days=Count("work_logs__log_date", filter=log_filter, distinct=True),
             )
             .order_by("-avg_productivity", "-total_hours", "name")
