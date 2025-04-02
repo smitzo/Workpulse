@@ -13,6 +13,7 @@ data/app_config.json
 employee_analytics_report.html
 node_modules/
 .next/
+frontend/next-env.d.ts
 *.tsbuildinfo
 out/
 dist/
