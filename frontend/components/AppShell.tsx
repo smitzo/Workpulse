@@ -64,6 +64,21 @@ export function AppShell({ auth, onLogout }: AppShellProps) {
     refresh(next);
   }
 
+  const navItems =
+    auth.user.role === "admin"
+      ? [
+          ["dashboard", "Dashboard"],
+          ["reports", "Reports"],
+          ["employees", "Employees"],
+          ["logs", "Timesheets"],
+          ["attendance", "Attendance"]
+        ]
+      : [
+          ["dashboard", "Dashboard"],
+          ["logs", "Timesheets"],
+          ["attendance", "Attendance"]
+        ];
+
   return (
     <main className="app-shell">
       <aside className="sidebar">
@@ -72,13 +87,7 @@ export function AppShell({ auth, onLogout }: AppShellProps) {
           <span>Employee Analytics</span>
         </div>
         <nav>
-          {[
-            ["dashboard", "Dashboard"],
-            ["reports", "Reports"],
-            ["employees", "Employees"],
-            ["logs", "Timesheets"],
-            ["attendance", "Attendance"]
-          ].map(([key, label]) => (
+          {navItems.map(([key, label]) => (
             <button key={key} className={active === key ? "active" : ""} type="button" onClick={() => setActive(key)}>
               {label}
             </button>
@@ -173,7 +182,7 @@ export function AppShell({ auth, onLogout }: AppShellProps) {
         ) : active === "reports" ? (
           <ReportsView dashboard={dashboard} filters={filters} insights={insights} token={auth.token} setMessage={setMessage} />
         ) : active === "dashboard" ? (
-          <DashboardView dashboard={dashboard} />
+          <DashboardView dashboard={dashboard} role={auth.user.role} />
         ) : (
           <ManagementViews
             active={active}

@@ -42,9 +42,8 @@ docs/
   DEPLOYMENT.md     Neon and deployment guide
 ```
 
-Legacy Tkinter and local HTTP files are still present under `app/` for reference
-while the project is being migrated; the deployable product is `backend/` plus
-`frontend/`.
+The deployable product is `backend/` plus `frontend/`; the old Tkinter and
+standard-library local web prototype has been removed.
 
 ## Local Development
 
@@ -70,7 +69,8 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000`. If that port is already busy, Next.js can run on
+another port such as `3001`; the backend CORS defaults include both local ports.
 
 ## Neon Postgres
 

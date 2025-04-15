@@ -227,7 +227,7 @@ textarea {
 .app-shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-columns: 240px minmax(0, 1fr);
 }
 
 .sidebar {
@@ -250,7 +250,7 @@ textarea {
 }
 
 .sidebar nav button {
-  min-height: 40px;
+  min-height: 42px;
   padding: 0 12px;
   border-radius: 7px;
   background: transparent;
@@ -266,7 +266,7 @@ textarea {
 
 .workspace {
   min-width: 0;
-  padding: 20px;
+  padding: 22px;
 }
 
 .topbar {
@@ -349,11 +349,11 @@ textarea {
 
 .filters-panel {
   display: grid;
-  grid-template-columns: repeat(8, minmax(120px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
   align-items: end;
-  padding: 12px;
-  margin-bottom: 14px;
+  padding: 14px;
+  margin-bottom: 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
@@ -374,14 +374,14 @@ textarea {
 .reports-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 
 .kpi-grid {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(8, minmax(110px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 12px;
 }
 
 .kpi-card,
@@ -393,8 +393,8 @@ textarea {
 }
 
 .kpi-card {
-  min-height: 84px;
-  padding: 14px;
+  min-height: 98px;
+  padding: 16px;
 }
 
 .kpi-card span {
@@ -409,7 +409,32 @@ textarea {
 .kpi-card strong {
   display: block;
   margin-top: 8px;
-  font-size: 28px;
+  font-size: 30px;
+}
+
+.metric-strip {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.metric-strip span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.metric-strip strong {
+  color: var(--ink);
 }
 
 .panel {
@@ -437,6 +462,12 @@ textarea {
   font-size: 15px;
 }
 
+.panel-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .chart-panel {
   padding-bottom: 14px;
 }
@@ -458,7 +489,7 @@ table {
 
 th,
 td {
-  padding: 11px 14px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--line);
   text-align: left;
   white-space: nowrap;
@@ -505,15 +536,51 @@ th {
 
 .management-grid {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .form-panel .form-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(160px, 1fr));
   gap: 12px;
-  padding: 14px;
   align-items: end;
+}
+
+.form-panel > .form-grid {
+  padding: 16px;
+}
+
+.form-section {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.form-section:last-child {
+  border-bottom: 0;
+}
+
+.form-section > span {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.span-2 {
+  grid-column: span 2;
+}
+
+.form-submit,
+.danger-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.form-submit {
+  align-self: end;
 }
 
 .danger-btn {
@@ -523,6 +590,11 @@ th {
   color: #ffffff;
   background: var(--red);
   font-weight: 800;
+}
+
+.task-form,
+.attendance-form {
+  max-width: 1120px;
 }
 
 @media (max-width: 920px) {
@@ -553,6 +625,10 @@ th {
   .reports-grid,
   .form-panel .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .span-2 {
+    grid-column: auto;
   }
 }
 

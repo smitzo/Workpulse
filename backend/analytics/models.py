@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from django.conf import settings
+from decimal import Decimal
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -46,11 +48,11 @@ class WorkLog(models.Model):
     log_date = models.DateField(db_index=True)
     project = models.CharField(max_length=120, db_index=True)
     task_type = models.CharField(max_length=120, db_index=True)
-    hours = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(0)])
+    hours = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(Decimal("0"))])
     productivity_score = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(100)]
     )
-    overtime_hours = models.DecimalField(max_digits=6, decimal_places=2, default=0, validators=[MinValueValidator(0)])
+    overtime_hours = models.DecimalField(max_digits=6, decimal_places=2, default=0, validators=[MinValueValidator(Decimal("0"))])
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -120,7 +122,7 @@ class WorkGroupItem(models.Model):
 
 class IdealTime(models.Model):
     task_type = models.CharField(max_length=120, primary_key=True)
-    ideal_hours = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(0)])
+    ideal_hours = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(Decimal("0"))])
 
     class Meta:
         ordering = ["task_type"]

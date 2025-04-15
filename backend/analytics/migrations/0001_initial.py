@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import migrations, models
 import django.core.validators
 import django.db.models.deletion
+import decimal
 
 
 class Migration(migrations.Migration):
@@ -35,7 +36,7 @@ class Migration(migrations.Migration):
                     models.DecimalField(
                         decimal_places=2,
                         max_digits=6,
-                        validators=[django.core.validators.MinValueValidator(0)],
+                        validators=[django.core.validators.MinValueValidator(decimal.Decimal("0"))],
                     ),
                 ),
             ],
@@ -138,7 +139,7 @@ class Migration(migrations.Migration):
                     models.DecimalField(
                         decimal_places=2,
                         max_digits=6,
-                        validators=[django.core.validators.MinValueValidator(0)],
+                        validators=[django.core.validators.MinValueValidator(decimal.Decimal("0"))],
                     ),
                 ),
                 (
@@ -156,7 +157,7 @@ class Migration(migrations.Migration):
                         decimal_places=2,
                         default=0,
                         max_digits=6,
-                        validators=[django.core.validators.MinValueValidator(0)],
+                        validators=[django.core.validators.MinValueValidator(decimal.Decimal("0"))],
                     ),
                 ),
                 ("notes", models.TextField(blank=True)),

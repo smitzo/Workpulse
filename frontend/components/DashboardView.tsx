@@ -21,6 +21,7 @@ const palette = ["#2563eb", "#0f9f6e", "#f97316", "#7c3aed", "#dc2626", "#0891b2
 
 type DashboardViewProps = {
   dashboard: Dashboard;
+  role?: "admin" | "employee";
 };
 
 function tupleData(rows: [string, number][]) {
@@ -36,19 +37,23 @@ function Kpi({ label, value, accent }: { label: string; value: string | number; 
   );
 }
 
-export function DashboardView({ dashboard }: DashboardViewProps) {
+export function DashboardView({ dashboard, role = "admin" }: DashboardViewProps) {
   const summary = dashboard.summary;
   return (
     <section className="dashboard-grid">
       <div className="kpi-grid">
-        <Kpi label="Employees" value={summary.total_employees} />
-        <Kpi label="Active" value={summary.active_employees} accent="var(--green)" />
         <Kpi label="Hours" value={summary.total_hours} />
         <Kpi label="Productivity" value={`${summary.avg_productivity}%`} accent="var(--primary)" />
         <Kpi label="Attendance" value={`${summary.attendance_rate}%`} accent="var(--green)" />
         <Kpi label="Overtime" value={summary.overtime_hours} accent="var(--amber)" />
-        <Kpi label="Absences" value={summary.absence_count} accent="var(--red)" />
-        <Kpi label="Logs" value={summary.work_logs} />
+      </div>
+
+      <div className="metric-strip">
+        {role === "admin" && <span><strong>{summary.total_employees}</strong> employees</span>}
+        {role === "admin" && <span><strong>{summary.active_employees}</strong> active</span>}
+        <span><strong>{summary.work_logs}</strong> work logs</span>
+        <span><strong>{summary.absence_count}</strong> absences</span>
+        <span><strong>{summary.late_minutes}</strong> late minutes</span>
       </div>
 
       <article className="panel chart-panel wide">
