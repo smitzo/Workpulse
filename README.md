@@ -11,7 +11,7 @@ light and dark themes.
 - Token authentication, login, signup, and a one-click demo entry.
 - Deterministic demo data for employees, work logs, attendance, projects, task groups, users, and ideal task times.
 - Next.js frontend with dashboard KPIs, charts, reports, employee management, timesheets, attendance, filters, and theme toggle.
-- Admin and employee scoping. Admins see all data; employees are restricted to their own records.
+- Admin, manager, and employee scoping. Admins see all data, managers see direct reports, and employees are restricted to their own records.
 - HTML report export from the API.
 
 ## Demo Access
@@ -23,6 +23,7 @@ dashboard and reports.
 Manual credentials are also available after running `seed_demo`:
 
 - Admin: `admin` / `admin123`
+- Manager: `EMP006` / `pass123`
 - Employee: `EMP001` / `pass123`
 
 ## Project Structure

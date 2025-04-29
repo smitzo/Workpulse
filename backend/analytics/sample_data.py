@@ -6,7 +6,15 @@ import random
 
 DEPARTMENTS = ["Engineering", "Sales", "Operations", "HR", "Finance", "Support"]
 TASK_TYPES = ["Project Work", "Client Support", "Training", "Documentation", "Planning", "Review"]
-PROJECTS = ["Payroll Revamp", "CRM Rollout", "Hiring Sprint", "Q2 Forecast", "Helpdesk SLA", "Data Quality"]
+PROJECTS = [
+    ("Payroll Revamp", "Priya Menon", "Active", "Modern payroll workflows and reporting."),
+    ("CRM Rollout", "Rohan Das", "Active", "Sales CRM migration and adoption."),
+    ("Hiring Sprint", "Tanvi Shah", "Active", "Role pipeline and interview operations."),
+    ("Q2 Forecast", "Dev Malhotra", "Active", "Quarterly forecast and finance planning."),
+    ("Helpdesk SLA", "Sara Thomas", "Active", "Support response-time improvement."),
+    ("Data Quality", "Priya Menon", "Active", "Operational data cleanup and quality dashboards."),
+]
+PROJECT_NAMES = [project[0] for project in PROJECTS]
 
 WORK_GROUPS = {
     "Delivery": {
@@ -34,6 +42,8 @@ IDEAL_TIMES = [
 
 USERS = [
     ("admin", "admin123", "admin", None),
+    ("EMP005", "pass123", "manager", "EMP005"),
+    ("EMP006", "pass123", "manager", "EMP006"),
     ("EMP001", "pass123", "employee", "EMP001"),
     ("EMP002", "pass123", "employee", "EMP002"),
     ("EMP003", "pass123", "employee", "EMP003"),
@@ -105,7 +115,7 @@ def build_sample_dataset(today: date | None = None) -> dict[str, list[tuple]]:
                 remaining_hours = max(4.5, rng.gauss(base_hours, 0.9))
                 for task_number in range(task_count):
                     task_type = rng.choice(TASK_TYPES)
-                    project = rng.choice(PROJECTS)
+                    project = rng.choice(PROJECT_NAMES)
                     hours = max(0.75, remaining_hours / (task_count - task_number) + rng.uniform(-0.45, 0.45))
                     remaining_hours -= hours
                     productivity = int(max(55, min(99, rng.gauss(base_score, 7))))
@@ -132,6 +142,7 @@ def build_sample_dataset(today: date | None = None) -> dict[str, list[tuple]]:
         "work_groups": WORK_GROUPS,
         "ideal_times": IDEAL_TIMES,
         "users": USERS,
+        "projects": PROJECTS,
     }
 
 

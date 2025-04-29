@@ -1,4 +1,16 @@
-import type { Attendance, AuthPayload, Dashboard, Employee, Filters, InsightsPayload, OptionsPayload, WorkLog } from "@/types/api";
+import type {
+  Attendance,
+  AuditLog,
+  AuthPayload,
+  Dashboard,
+  Employee,
+  Filters,
+  InsightsPayload,
+  OptionsPayload,
+  Project,
+  UserSummary,
+  WorkLog
+} from "@/types/api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/api";
 
@@ -111,6 +123,14 @@ export function saveEmployee(token: string, payload: Record<string, string>) {
   });
 }
 
+export function updateEmployee(token: string, employeeId: string, payload: Record<string, string>) {
+  return apiFetch<Employee>(`/employees/${employeeId}/`, {
+    method: "PATCH",
+    token,
+    body: JSON.stringify(payload)
+  });
+}
+
 export function deleteEmployee(token: string, employeeId: string) {
   return apiFetch<void>(`/employees/${employeeId}/`, { method: "DELETE", token });
 }
@@ -143,4 +163,48 @@ export function saveAttendance(token: string, payload: Record<string, string>) {
     token,
     body: JSON.stringify(payload)
   });
+}
+
+export function markAttendanceToday(token: string) {
+  return apiFetch<Attendance>("/attendance/mark-today/", { method: "POST", token });
+}
+
+export function getProjects(token: string) {
+  return apiFetch<Project[]>("/projects/", { token });
+}
+
+export function saveProject(token: string, payload: Record<string, string>) {
+  return apiFetch<Project>("/projects/", {
+    method: "POST",
+    token,
+    body: JSON.stringify(payload)
+  });
+}
+
+export function updateProject(token: string, id: number, payload: Record<string, string>) {
+  return apiFetch<Project>(`/projects/${id}/`, {
+    method: "PATCH",
+    token,
+    body: JSON.stringify(payload)
+  });
+}
+
+export function deleteProject(token: string, id: number) {
+  return apiFetch<void>(`/projects/${id}/`, { method: "DELETE", token });
+}
+
+export function getUsers(token: string) {
+  return apiFetch<UserSummary[]>("/users/", { token });
+}
+
+export function createUser(token: string, payload: Record<string, string>) {
+  return apiFetch<AuthPayload["user"]>("/users/", {
+    method: "POST",
+    token,
+    body: JSON.stringify(payload)
+  });
+}
+
+export function getAuditLogs(token: string) {
+  return apiFetch<AuditLog[]>("/audit-logs/", { token });
 }

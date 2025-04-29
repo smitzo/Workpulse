@@ -1,6 +1,7 @@
 "use client";
 
-import { BarChart3, LogOut, Moon, RefreshCw, Sun } from "lucide-react";
+import { BarChart3, Bell, Building2, ClipboardList, LayoutDashboard, LogOut, Moon, RefreshCw, ShieldCheck, Sun, UserRoundCog, Users } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { DashboardView } from "@/components/DashboardView";
@@ -64,31 +65,43 @@ export function AppShell({ auth, onLogout }: AppShellProps) {
     refresh(next);
   }
 
-  const navItems =
+  const navItems: Array<[string, string, LucideIcon]> =
     auth.user.role === "admin"
       ? [
-          ["dashboard", "Dashboard"],
-          ["reports", "Reports"],
-          ["employees", "Employees"],
-          ["logs", "Timesheets"],
-          ["attendance", "Attendance"]
+          ["dashboard", "Dashboard", LayoutDashboard],
+          ["reports", "Reports", BarChart3],
+          ["employees", "Employees", Users],
+          ["projects", "Projects", Building2],
+          ["users", "Users", UserRoundCog],
+          ["logs", "Timesheets", ClipboardList],
+          ["attendance", "Attendance", Bell],
+          ["audit", "Audit Logs", ShieldCheck]
+        ]
+      : auth.user.role === "manager"
+      ? [
+          ["dashboard", "Team Dashboard", LayoutDashboard],
+          ["reports", "Reports", BarChart3],
+          ["employees", "My Team", Users],
+          ["logs", "Timesheets", ClipboardList],
+          ["attendance", "Attendance", Bell]
         ]
       : [
-          ["dashboard", "Dashboard"],
-          ["logs", "Timesheets"],
-          ["attendance", "Attendance"]
+          ["dashboard", "My Dashboard", LayoutDashboard],
+          ["logs", "Timesheet", ClipboardList],
+          ["attendance", "Attendance", Bell]
         ];
 
   return (
     <main className="app-shell">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <BarChart3 />
+          <span className="app-mark">EA</span>
           <span>Employee Analytics</span>
         </div>
         <nav>
-          {navItems.map(([key, label]) => (
+          {navItems.map(([key, label, Icon]) => (
             <button key={key} className={active === key ? "active" : ""} type="button" onClick={() => setActive(key)}>
+              <Icon size={17} />
               {label}
             </button>
           ))}
@@ -98,7 +111,7 @@ export function AppShell({ auth, onLogout }: AppShellProps) {
       <section className="workspace">
         <header className="topbar">
           <div>
-            <span className="eyebrow">Welcome back</span>
+            <span className="eyebrow">{auth.user.role} workspace</span>
             <h1>{auth.user.name}</h1>
           </div>
           <div className="topbar-actions">
@@ -125,7 +138,7 @@ export function AppShell({ auth, onLogout }: AppShellProps) {
             To
             <input type="date" value={filters.date_to || ""} onChange={(event) => updateFilter("date_to", event.target.value)} />
           </label>
-          {auth.user.role === "admin" && (
+          {auth.user.role !== "employee" && (
             <>
               <label>
                 Department

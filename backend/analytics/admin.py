@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from analytics.models import Attendance, Employee, IdealTime, UserProfile, WorkGroup, WorkGroupItem, WorkLog
+from analytics.models import Attendance, AuditLog, Employee, IdealTime, Project, UserProfile, WorkGroup, WorkGroupItem, WorkLog
 
 
 @admin.register(Employee)
@@ -25,6 +25,8 @@ class AttendanceAdmin(admin.ModelAdmin):
 
 
 admin.site.register(UserProfile)
+admin.site.register(Project)
 admin.site.register(WorkGroup)
 admin.site.register(WorkGroupItem)
 admin.site.register(IdealTime)
+admin.site.register(AuditLog)

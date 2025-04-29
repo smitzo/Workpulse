@@ -14,6 +14,13 @@ class Employee(models.Model):
     role = models.CharField(max_length=120)
     location = models.CharField(max_length=120)
     manager = models.CharField(max_length=120)
+    manager_employee = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="direct_reports",
+    )
     hire_date = models.DateField()
     status = models.CharField(max_length=32, db_index=True)
 
@@ -26,9 +33,11 @@ class Employee(models.Model):
 
 class UserProfile(models.Model):
     ROLE_ADMIN = "admin"
+    ROLE_MANAGER = "manager"
     ROLE_EMPLOYEE = "employee"
     ROLE_CHOICES = (
         (ROLE_ADMIN, "Admin"),
+        (ROLE_MANAGER, "Manager"),
         (ROLE_EMPLOYEE, "Employee"),
     )
 
@@ -66,6 +75,30 @@ class WorkLog(models.Model):
 
     def __str__(self) -> str:
         return f"{self.employee_id} {self.log_date} {self.task_type}"
+
+
+class Project(models.Model):
+    STATUS_ACTIVE = "Active"
+    STATUS_PAUSED = "Paused"
+    STATUS_ARCHIVED = "Archived"
+    STATUS_CHOICES = (
+        (STATUS_ACTIVE, "Active"),
+        (STATUS_PAUSED, "Paused"),
+        (STATUS_ARCHIVED, "Archived"),
+    )
+
+    name = models.CharField(max_length=120, unique=True)
+    owner = models.CharField(max_length=120, blank=True)
+    status = models.CharField(max_length=24, choices=STATUS_CHOICES, default=STATUS_ACTIVE, db_index=True)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class Attendance(models.Model):
@@ -129,3 +162,30 @@ class IdealTime(models.Model):
 
     def __str__(self) -> str:
         return f"{self.task_type}: {self.ideal_hours}"
+
+
+class AuditLog(models.Model):
+    ACTION_CREATE = "create"
+    ACTION_UPDATE = "update"
+    ACTION_DELETE = "delete"
+    ACTION_MARK_ATTENDANCE = "mark_attendance"
+    ACTION_CHOICES = (
+        (ACTION_CREATE, "Create"),
+        (ACTION_UPDATE, "Update"),
+        (ACTION_DELETE, "Delete"),
+        (ACTION_MARK_ATTENDANCE, "Mark attendance"),
+    )
+
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    action = models.CharField(max_length=32, choices=ACTION_CHOICES, db_index=True)
+    entity = models.CharField(max_length=80, db_index=True)
+    entity_id = models.CharField(max_length=120, blank=True)
+    summary = models.CharField(max_length=255)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
+    def __str__(self) -> str:
+        return f"{self.action} {self.entity} {self.entity_id}"

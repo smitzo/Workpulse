@@ -1,29 +1,29 @@
 :root {
   color-scheme: light;
-  --bg: #eef2f6;
+  --bg: #f4f5f7;
   --surface: #ffffff;
-  --surface-2: #f8fafc;
-  --ink: #111827;
-  --muted: #64748b;
-  --line: #d8dee8;
-  --primary: #2563eb;
+  --surface-2: #f7f7f8;
+  --ink: #1f2933;
+  --muted: #6b7280;
+  --line: #d9dde4;
+  --primary: #875a7b;
   --primary-ink: #ffffff;
-  --green: #0f9f6e;
-  --red: #dc2626;
-  --amber: #b7791f;
-  --shadow: 0 18px 45px rgba(15, 23, 42, 0.1);
+  --green: #148f63;
+  --red: #c93434;
+  --amber: #ad7b24;
+  --shadow: 0 8px 22px rgba(31, 41, 51, 0.08);
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #101318;
-  --surface: #171b22;
-  --surface-2: #202632;
-  --ink: #e5edf7;
-  --muted: #9aa8bb;
-  --line: #2f3947;
-  --primary: #5b8cff;
-  --primary-ink: #07111f;
+  --bg: #121416;
+  --surface: #1b1f24;
+  --surface-2: #242932;
+  --ink: #edf0f4;
+  --muted: #a0a8b4;
+  --line: #343b46;
+  --primary: #b47ca5;
+  --primary-ink: #ffffff;
   --green: #36c28a;
   --red: #ff6b6b;
   --amber: #f2b84b;
@@ -169,17 +169,18 @@ label {
 input,
 select,
 textarea {
-  min-height: 42px;
+  min-height: 38px;
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 10px 12px;
+  border-radius: 6px;
+  padding: 8px 10px;
   color: var(--ink);
   background: var(--surface);
 }
 
 .primary-btn,
-.demo-btn {
+.demo-btn,
+.success-btn {
   min-height: 44px;
   border-radius: 7px;
   font-weight: 800;
@@ -231,9 +232,13 @@ textarea {
 }
 
 .sidebar {
-  padding: 18px;
+  padding: 14px;
   border-right: 1px solid var(--line);
-  background: var(--surface);
+  background: #ffffff;
+}
+
+[data-theme="dark"] .sidebar {
+  background: #171a1f;
 }
 
 .sidebar-brand {
@@ -241,7 +246,20 @@ textarea {
   align-items: center;
   gap: 10px;
   font-weight: 900;
-  margin-bottom: 28px;
+  min-height: 46px;
+  margin-bottom: 16px;
+  padding: 0 8px;
+}
+
+.app-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-size: 12px;
 }
 
 .sidebar nav {
@@ -250,7 +268,10 @@ textarea {
 }
 
 .sidebar nav button {
-  min-height: 42px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
   padding: 0 12px;
   border-radius: 7px;
   background: transparent;
@@ -260,13 +281,17 @@ textarea {
 }
 
 .sidebar nav button.active {
-  background: var(--surface-2);
+  background: #f1edf1;
   color: var(--ink);
+}
+
+[data-theme="dark"] .sidebar nav button.active {
+  background: #2d2630;
 }
 
 .workspace {
   min-width: 0;
-  padding: 22px;
+  padding: 18px 22px 28px;
 }
 
 .topbar {
@@ -274,7 +299,10 @@ textarea {
   justify-content: space-between;
   gap: 16px;
   align-items: center;
-  margin-bottom: 18px;
+  min-height: 58px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
 }
 
 .eyebrow {
@@ -288,7 +316,7 @@ textarea {
 
 .topbar h1 {
   margin: 4px 0 0;
-  font-size: 28px;
+  font-size: 24px;
 }
 
 .topbar-actions {
@@ -352,11 +380,12 @@ textarea {
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 12px;
   align-items: end;
-  padding: 14px;
+  padding: 12px;
   margin-bottom: 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .filters-panel .primary-btn,
@@ -389,7 +418,7 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
-  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.03);
+  box-shadow: var(--shadow);
 }
 
 .kpi-card {
@@ -448,12 +477,12 @@ textarea {
 }
 
 .panel header {
-  min-height: 54px;
+  min-height: 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -489,7 +518,7 @@ table {
 
 th,
 td {
-  padding: 10px 14px;
+  padding: 9px 12px;
   border-bottom: 1px solid var(--line);
   text-align: left;
   white-space: nowrap;
@@ -501,6 +530,10 @@ th {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+tbody tr:hover {
+  background: var(--surface-2);
 }
 
 .report-summary {
@@ -590,6 +623,58 @@ th {
   color: #ffffff;
   background: var(--red);
   font-weight: 800;
+}
+
+.success-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 18px;
+  color: #ffffff;
+  background: var(--green);
+}
+
+.quick-attendance {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  max-width: 1120px;
+  padding: 16px;
+  border: 1px solid #b8e6d0;
+  border-radius: 8px;
+  background: #effaf4;
+}
+
+[data-theme="dark"] .quick-attendance {
+  border-color: #235a44;
+  background: #14251d;
+}
+
+.quick-attendance span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.quick-attendance strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 18px;
+}
+
+.row-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.secondary-btn.compact {
+  min-height: 32px;
+  padding: 0 10px;
 }
 
 .task-form,

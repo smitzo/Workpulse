@@ -19,6 +19,7 @@ class Filters:
     date_to: str | None = None
     department: str | None = None
     employee_id: str | None = None
+    employee_ids: tuple[str, ...] | None = None
     task_type: str | None = None
     project: str | None = None
 
@@ -46,15 +47,42 @@ def user_role(user: User | AnonymousUser) -> str:
     return UserProfile.ROLE_ADMIN if user.is_staff else UserProfile.ROLE_EMPLOYEE
 
 
-def scoped_filters(filters: Filters, user: User | AnonymousUser) -> Filters:
+def accessible_employee_ids(user: User | AnonymousUser) -> tuple[str, ...] | None:
+    role = user_role(user)
+    if role == UserProfile.ROLE_ADMIN:
+        return None
+
     profile = getattr(user, "profile", None)
-    if user_role(user) == UserProfile.ROLE_ADMIN:
+    if not profile or not profile.employee_id:
+        return ()
+
+    if role == UserProfile.ROLE_MANAGER:
+        manager = profile.employee
+        ids = set(
+            Employee.objects.filter(Q(manager_employee_id=manager.employee_id) | Q(manager=manager.name))
+            .values_list("employee_id", flat=True)
+        )
+        ids.add(manager.employee_id)
+        return tuple(sorted(ids))
+
+    return (profile.employee_id,)
+
+
+def scoped_filters(filters: Filters, user: User | AnonymousUser) -> Filters:
+    allowed_ids = accessible_employee_ids(user)
+    if allowed_ids is None:
         return filters
+
+    employee_id = filters.employee_id if filters.employee_id in allowed_ids else None
+    if filters.employee_id and filters.employee_id not in allowed_ids:
+        allowed_ids = ()
+
     return Filters(
         date_from=filters.date_from,
         date_to=filters.date_to,
         department=filters.department,
-        employee_id=profile.employee_id if profile else filters.employee_id,
+        employee_id=employee_id,
+        employee_ids=allowed_ids,
         task_type=filters.task_type,
         project=filters.project,
     )
@@ -119,6 +147,8 @@ class AnalyticsService:
             queryset = queryset.filter(department=filters.department)
         if filters.employee_id and filters.employee_id != "All":
             queryset = queryset.filter(employee_id=filters.employee_id)
+        elif filters.employee_ids is not None:
+            queryset = queryset.filter(employee_id__in=filters.employee_ids)
         return queryset
 
     def work_log_queryset(self, filters: Filters):
@@ -131,6 +161,8 @@ class AnalyticsService:
             queryset = queryset.filter(employee__department=filters.department)
         if filters.employee_id and filters.employee_id != "All":
             queryset = queryset.filter(employee_id=filters.employee_id)
+        elif filters.employee_ids is not None:
+            queryset = queryset.filter(employee_id__in=filters.employee_ids)
         if filters.task_type and filters.task_type != "All":
             queryset = queryset.filter(task_type=filters.task_type)
         if filters.project and filters.project != "All":
@@ -147,6 +179,8 @@ class AnalyticsService:
             queryset = queryset.filter(employee__department=filters.department)
         if filters.employee_id and filters.employee_id != "All":
             queryset = queryset.filter(employee_id=filters.employee_id)
+        elif filters.employee_ids is not None:
+            queryset = queryset.filter(employee_id__in=filters.employee_ids)
         return queryset
 
     def grouped_metric(self, group_by: str, metric: str, filters: Filters, limit: int = 10) -> list[tuple[str, float]]:

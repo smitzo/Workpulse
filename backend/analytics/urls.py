@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from analytics.views import (
     AttendanceViewSet,
+    AuditLogViewSet,
     DashboardView,
     DemoLoginView,
     EmployeeViewSet,
@@ -10,8 +11,10 @@ from analytics.views import (
     LoginView,
     MeView,
     OptionsView,
+    ProjectViewSet,
     ReportView,
     SignupView,
+    UserAdminViewSet,
     WorkLogViewSet,
 )
 
@@ -20,6 +23,9 @@ router = DefaultRouter()
 router.register("employees", EmployeeViewSet, basename="employees")
 router.register("logs", WorkLogViewSet, basename="logs")
 router.register("attendance", AttendanceViewSet, basename="attendance")
+router.register("projects", ProjectViewSet, basename="projects")
+router.register("users", UserAdminViewSet, basename="users")
+router.register("audit-logs", AuditLogViewSet, basename="audit-logs")
 
 urlpatterns = [
     path("auth/login/", LoginView.as_view(), name="login"),

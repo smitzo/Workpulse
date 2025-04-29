@@ -19,7 +19,7 @@ Authorization: Token <token>
 
 - `GET /dashboard/` returns KPIs, chart datasets, performance rows, heatmap, ideal-vs-actual, and sunburst data
 - `GET /insights/` returns executive summary text and insight cards
-- `GET /report/` returns an HTML report for admins
+- `GET /report/` returns an HTML report for managers and admins
 - `GET /options/` returns filter dropdown values
 
 Common query filters:
@@ -34,10 +34,17 @@ Common query filters:
 ## Management
 
 - `GET|POST /employees/`
+- `PATCH /employees/{employee_id}/`
 - `DELETE /employees/{employee_id}/`
+- `GET|POST /projects/`
+- `PATCH|DELETE /projects/{id}/`
+- `GET|POST /users/`
+- `GET /audit-logs/`
 - `GET|POST /logs/`
 - `DELETE /logs/{id}/`
 - `GET|POST /attendance/`
+- `POST /attendance/mark-today/`
 
-Employees can access their own logs and attendance. Admin users can access and
-manage all records.
+Employees can access their own logs and attendance. Managers can access their
+direct reports. Admin users can access and manage all records, users, projects,
+and audit logs.

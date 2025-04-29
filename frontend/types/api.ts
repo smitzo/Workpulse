@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "employee";
+export type UserRole = "admin" | "manager" | "employee";
 
 export type AuthUser = {
   username: string;
@@ -21,8 +21,41 @@ export type Employee = {
   role: string;
   location: string;
   manager: string;
+  manager_employee_id?: string | null;
   hire_date: string;
   status: string;
+};
+
+export type Project = {
+  id: number;
+  name: string;
+  owner: string;
+  status: "Active" | "Paused" | "Archived";
+  description: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type UserSummary = {
+  id: number;
+  username: string;
+  email: string;
+  access_role: UserRole;
+  employee_id: string;
+  name: string;
+  department: string;
+  is_active: boolean;
+};
+
+export type AuditLog = {
+  id: number;
+  actor: string | null;
+  action: string;
+  entity: string;
+  entity_id: string;
+  summary: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
 };
 
 export type WorkLog = {
@@ -101,6 +134,7 @@ export type OptionsPayload = {
   task_types: string[];
   projects: string[];
   statuses: string[];
+  roles: UserRole[];
 };
 
 export type Filters = {

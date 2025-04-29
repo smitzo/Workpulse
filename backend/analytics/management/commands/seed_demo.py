@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from rest_framework.authtoken.models import Token
 
-from analytics.models import Attendance, Employee, IdealTime, UserProfile, WorkGroup, WorkGroupItem, WorkLog
+from analytics.models import Attendance, AuditLog, Employee, IdealTime, Project, UserProfile, WorkGroup, WorkGroupItem, WorkLog
 from analytics.sample_data import build_sample_dataset
 
 
@@ -22,11 +22,15 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         if options["reset"]:
+            profile_user_ids = list(UserProfile.objects.values_list("user_id", flat=True))
+            AuditLog.objects.all().delete()
             Token.objects.all().delete()
             UserProfile.objects.all().delete()
-            User.objects.filter(username__in=["admin", "EMP001", "EMP002", "EMP003"]).delete()
+            User.objects.filter(id__in=profile_user_ids).delete()
+            User.objects.filter(username__in=["admin", "EMP001", "EMP002", "EMP003", "EMP005", "EMP006"]).delete()
             Attendance.objects.all().delete()
             WorkLog.objects.all().delete()
+            Project.objects.all().delete()
             WorkGroupItem.objects.all().delete()
             WorkGroup.objects.all().delete()
             IdealTime.objects.all().delete()
@@ -56,6 +60,23 @@ class Command(BaseCommand):
             "hire_date",
             "status",
         ], unique_fields=["employee_id"])
+
+        employees_by_name = {employee.name: employee for employee in Employee.objects.all()}
+        for employee in Employee.objects.all():
+            manager = employees_by_name.get(employee.manager)
+            if manager:
+                employee.manager_employee = manager
+                employee.save(update_fields=["manager_employee"])
+
+        Project.objects.bulk_create(
+            [
+                Project(name=name, owner=owner, status=status, description=description)
+                for name, owner, status, description in dataset["projects"]
+            ],
+            update_conflicts=True,
+            update_fields=["owner", "status", "description"],
+            unique_fields=["name"],
+        )
 
         WorkLog.objects.bulk_create(
             [

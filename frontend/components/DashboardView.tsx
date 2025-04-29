@@ -21,7 +21,7 @@ const palette = ["#2563eb", "#0f9f6e", "#f97316", "#7c3aed", "#dc2626", "#0891b2
 
 type DashboardViewProps = {
   dashboard: Dashboard;
-  role?: "admin" | "employee";
+  role?: "admin" | "manager" | "employee";
 };
 
 function tupleData(rows: [string, number][]) {
