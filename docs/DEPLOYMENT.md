@@ -60,10 +60,10 @@ npm run start
 
 ## 4. Demo Data
 
-The frontend demo buttons call `POST /api/auth/demo/` with `employee`, `manager`,
-or `admin`. If no employees exist, the backend seeds demo data and returns a
-matching demo token. On production databases with real data, run `seed_demo` only
-when you intentionally want sample records.
+The Employee, Manager, and Admin preview buttons use bundled frontend JSON and
+work without the backend. Normal login, signup, and production records still use
+the Django API. Run `seed_demo` only when you intentionally want sample records
+inside the database.
 
 ## 5. Production Checklist
 

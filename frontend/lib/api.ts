@@ -11,6 +11,31 @@ import type {
   UserSummary,
   WorkLog
 } from "@/types/api";
+import {
+  isLocalDemoToken,
+  localAttendance,
+  localAuditLogs,
+  localCreateUser,
+  localDashboard,
+  localDeleteEmployee,
+  localDeleteLog,
+  localDeleteProject,
+  localDemoLogin,
+  localEmployees,
+  localInsights,
+  localLogs,
+  localMarkAttendanceToday,
+  localOptions,
+  localProjects,
+  localReportHtml,
+  localSaveAttendance,
+  localSaveEmployee,
+  localSaveLog,
+  localSaveProject,
+  localUpdateEmployee,
+  localUpdateProject,
+  localUsers
+} from "@/lib/localDemo";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/api";
 
@@ -64,10 +89,7 @@ export function login(username: string, password: string) {
 }
 
 export function demoLogin(role: "employee" | "manager" | "admin" = "admin") {
-  return apiFetch<AuthPayload>("/auth/demo/", {
-    method: "POST",
-    body: JSON.stringify({ role })
-  });
+  return Promise.resolve(localDemoLogin(role));
 }
 
 export function signup(payload: Record<string, string>) {
@@ -94,20 +116,24 @@ export function queryString(filters: Filters) {
 }
 
 export function getOptions(token: string) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localOptions(token));
   return apiFetch<OptionsPayload>("/options/", { token });
 }
 
 export function getDashboard(token: string, filters: Filters) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localDashboard(token, filters));
   const query = queryString(filters);
   return apiFetch<Dashboard>(`/dashboard/${query ? `?${query}` : ""}`, { token });
 }
 
 export function getInsights(token: string, filters: Filters) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localInsights(token, filters));
   const query = queryString(filters);
   return apiFetch<InsightsPayload>(`/insights/${query ? `?${query}` : ""}`, { token });
 }
 
 export async function getReportHtml(token: string, filters: Filters) {
+  if (isLocalDemoToken(token)) return localReportHtml(token, filters);
   const query = queryString(filters);
   const response = await fetch(`${API_BASE_URL}/report/${query ? `?${query}` : ""}`, {
     headers: { Authorization: `Token ${token}` },
@@ -120,10 +146,12 @@ export async function getReportHtml(token: string, filters: Filters) {
 }
 
 export function getEmployees(token: string) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localEmployees(token));
   return apiFetch<Employee[]>("/employees/", { token });
 }
 
 export function saveEmployee(token: string, payload: Record<string, string>) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localSaveEmployee(payload));
   return apiFetch<Employee>("/employees/", {
     method: "POST",
     token,
@@ -132,6 +160,7 @@ export function saveEmployee(token: string, payload: Record<string, string>) {
 }
 
 export function updateEmployee(token: string, employeeId: string, payload: Record<string, string>) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localUpdateEmployee(employeeId, payload));
   return apiFetch<Employee>(`/employees/${employeeId}/`, {
     method: "PATCH",
     token,
@@ -140,15 +169,21 @@ export function updateEmployee(token: string, employeeId: string, payload: Recor
 }
 
 export function deleteEmployee(token: string, employeeId: string) {
+  if (isLocalDemoToken(token)) {
+    localDeleteEmployee(employeeId);
+    return Promise.resolve();
+  }
   return apiFetch<void>(`/employees/${employeeId}/`, { method: "DELETE", token });
 }
 
 export function getLogs(token: string, filters: Filters) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localLogs(token, filters));
   const query = queryString(filters);
   return apiFetch<WorkLog[]>(`/logs/${query ? `?${query}` : ""}`, { token });
 }
 
 export function saveLog(token: string, payload: Record<string, string>) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localSaveLog(token, payload));
   return apiFetch<WorkLog>("/logs/", {
     method: "POST",
     token,
@@ -157,15 +192,21 @@ export function saveLog(token: string, payload: Record<string, string>) {
 }
 
 export function deleteLog(token: string, id: number) {
+  if (isLocalDemoToken(token)) {
+    localDeleteLog(id);
+    return Promise.resolve();
+  }
   return apiFetch<void>(`/logs/${id}/`, { method: "DELETE", token });
 }
 
 export function getAttendance(token: string, filters: Filters) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localAttendance(token, filters));
   const query = queryString(filters);
   return apiFetch<Attendance[]>(`/attendance/${query ? `?${query}` : ""}`, { token });
 }
 
 export function saveAttendance(token: string, payload: Record<string, string>) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localSaveAttendance(token, payload));
   return apiFetch<Attendance>("/attendance/", {
     method: "POST",
     token,
@@ -174,14 +215,17 @@ export function saveAttendance(token: string, payload: Record<string, string>) {
 }
 
 export function markAttendanceToday(token: string) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localMarkAttendanceToday(token));
   return apiFetch<Attendance>("/attendance/mark-today/", { method: "POST", token });
 }
 
 export function getProjects(token: string) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localProjects());
   return apiFetch<Project[]>("/projects/", { token });
 }
 
 export function saveProject(token: string, payload: Record<string, string>) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localSaveProject(payload));
   return apiFetch<Project>("/projects/", {
     method: "POST",
     token,
@@ -190,6 +234,7 @@ export function saveProject(token: string, payload: Record<string, string>) {
 }
 
 export function updateProject(token: string, id: number, payload: Record<string, string>) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localUpdateProject(id, payload));
   return apiFetch<Project>(`/projects/${id}/`, {
     method: "PATCH",
     token,
@@ -198,14 +243,20 @@ export function updateProject(token: string, id: number, payload: Record<string,
 }
 
 export function deleteProject(token: string, id: number) {
+  if (isLocalDemoToken(token)) {
+    localDeleteProject(id);
+    return Promise.resolve();
+  }
   return apiFetch<void>(`/projects/${id}/`, { method: "DELETE", token });
 }
 
 export function getUsers(token: string) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localUsers());
   return apiFetch<UserSummary[]>("/users/", { token });
 }
 
 export function createUser(token: string, payload: Record<string, string>) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localCreateUser(payload));
   return apiFetch<AuthPayload["user"]>("/users/", {
     method: "POST",
     token,
@@ -214,5 +265,6 @@ export function createUser(token: string, payload: Record<string, string>) {
 }
 
 export function getAuditLogs(token: string) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localAuditLogs());
   return apiFetch<AuditLog[]>("/audit-logs/", { token });
 }
