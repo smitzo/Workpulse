@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarCheck, CheckCircle2, ClipboardList, Clock3, FolderKanban, Save, ShieldCheck, Trash2, UserPlus, Users } from "lucide-react";
+import { CalendarCheck, CheckCircle2, ClipboardList, Clock3, FolderKanban, Pencil, Save, ShieldCheck, Trash2, UserPlus, Users, X } from "lucide-react";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 
@@ -40,7 +40,14 @@ function formValues(form: HTMLFormElement) {
 }
 
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  const date = new Date();
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().slice(0, 10);
+}
+
+function currentTime() {
+  const date = new Date();
+  return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
 export function ManagementViews({ active, filters, options, token, user, setMessage, afterChange }: ManagementProps) {
@@ -64,7 +71,8 @@ export function ManagementViews({ active, filters, options, token, user, setMess
 
 function EmployeesPanel({ token, user, setMessage, afterChange }: Pick<ManagementProps, "token" | "user" | "setMessage" | "afterChange">) {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [editing, setEditing] = useState<Employee | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draftEmployee, setDraftEmployee] = useState<Employee | null>(null);
 
   async function load() {
     setEmployees(await getEmployees(token));
@@ -83,16 +91,11 @@ function EmployeesPanel({ token, user, setMessage, afterChange }: Pick<Managemen
     }
     try {
       const payload = formValues(event.currentTarget);
-      if (editing) {
-        await updateEmployee(token, editing.employee_id, payload);
-      } else {
-        await saveEmployee(token, payload);
-      }
+      await saveEmployee(token, payload);
       event.currentTarget.reset();
-      setEditing(null);
       await load();
       afterChange();
-      setMessage(editing ? "Employee updated." : "Employee saved.");
+      setMessage("Employee saved.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not save employee.");
     }
@@ -109,10 +112,35 @@ function EmployeesPanel({ token, user, setMessage, afterChange }: Pick<Managemen
     }
   }
 
+  function startEditing(employee: Employee) {
+    setEditingId(employee.employee_id);
+    setDraftEmployee({ ...employee });
+  }
+
+  function updateDraft(key: keyof Employee, value: string) {
+    setDraftEmployee((current) => (current ? { ...current, [key]: value } : current));
+  }
+
+  async function saveInlineEmployee() {
+    if (!draftEmployee) {
+      return;
+    }
+    try {
+      await updateEmployee(token, draftEmployee.employee_id, draftEmployee as unknown as Record<string, string>);
+      setEditingId(null);
+      setDraftEmployee(null);
+      await load();
+      afterChange();
+      setMessage("Employee updated inline.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not update employee.");
+    }
+  }
+
   return (
     <section className="management-grid">
       {user.role === "admin" && (
-        <form key={editing?.employee_id || "new-employee"} className="panel form-panel" onSubmit={submit}>
+        <form className="panel form-panel" onSubmit={submit}>
           <header>
             <div className="panel-title">
               <Users size={18} />
@@ -120,16 +148,15 @@ function EmployeesPanel({ token, user, setMessage, afterChange }: Pick<Managemen
             </div>
           </header>
           <div className="form-grid">
-            <label>ID<input name="employee_id" defaultValue={editing?.employee_id} readOnly={Boolean(editing)} required /></label>
-            <label>Name<input name="name" defaultValue={editing?.name} required /></label>
-            <label>Department<input name="department" defaultValue={editing?.department} required /></label>
-            <label>Role<input name="role" defaultValue={editing?.role} required /></label>
-            <label>Location<input name="location" defaultValue={editing?.location} required /></label>
-            <label>Manager<input name="manager" defaultValue={editing?.manager} required /></label>
-            <label>Hire date<input name="hire_date" type="date" defaultValue={editing?.hire_date} required /></label>
-            <label>Status<select name="status" defaultValue={editing?.status || "Active"}><option>Active</option><option>On Leave</option><option>Inactive</option></select></label>
-            <button className="primary-btn form-submit" type="submit"><Save size={16} />{editing ? "Update employee" : "Save employee"}</button>
-            {editing && <button className="secondary-btn form-submit" type="button" onClick={() => setEditing(null)}>Cancel</button>}
+            <label>ID<input name="employee_id" required /></label>
+            <label>Name<input name="name" required /></label>
+            <label>Department<input name="department" required /></label>
+            <label>Role<input name="role" required /></label>
+            <label>Location<input name="location" required /></label>
+            <label>Manager<input name="manager" defaultValue="Unassigned" required /></label>
+            <label>Hire date<input name="hire_date" type="date" defaultValue={today()} required /></label>
+            <label>Status<select name="status" defaultValue="Active"><option>Active</option><option>On Leave</option><option>Inactive</option></select></label>
+            <button className="primary-btn form-submit" type="submit"><Save size={16} />Save employee</button>
           </div>
         </form>
       )}
@@ -139,19 +166,41 @@ function EmployeesPanel({ token, user, setMessage, afterChange }: Pick<Managemen
         </header>
         <div className="table-wrap">
           <table>
-            <thead><tr><th>ID</th><th>Name</th><th>Department</th><th>Role</th><th>Manager</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>ID</th><th>Name</th><th>Department</th><th>Role</th><th>Location</th><th>Manager</th><th>Hire Date</th><th>Status</th><th></th></tr></thead>
             <tbody>
               {employees.map((employee) => (
                 <tr key={employee.employee_id}>
                   <td>{employee.employee_id}</td>
-                  <td>{employee.name}</td>
-                  <td>{employee.department}</td>
-                  <td>{employee.role}</td>
-                  <td>{employee.manager}</td>
-                  <td>{employee.status}</td>
+                  {editingId === employee.employee_id && draftEmployee ? (
+                    <>
+                      <td><input aria-label="Name" value={draftEmployee.name} onChange={(event) => updateDraft("name", event.target.value)} /></td>
+                      <td><input aria-label="Department" value={draftEmployee.department} onChange={(event) => updateDraft("department", event.target.value)} /></td>
+                      <td><input aria-label="Role" value={draftEmployee.role} onChange={(event) => updateDraft("role", event.target.value)} /></td>
+                      <td><input aria-label="Location" value={draftEmployee.location} onChange={(event) => updateDraft("location", event.target.value)} /></td>
+                      <td><input aria-label="Manager" value={draftEmployee.manager} onChange={(event) => updateDraft("manager", event.target.value)} /></td>
+                      <td><input aria-label="Hire date" type="date" value={draftEmployee.hire_date} onChange={(event) => updateDraft("hire_date", event.target.value)} /></td>
+                      <td><select aria-label="Status" value={draftEmployee.status} onChange={(event) => updateDraft("status", event.target.value)}><option>Active</option><option>On Leave</option><option>Inactive</option></select></td>
+                    </>
+                  ) : (
+                    <>
+                      <td>{employee.name}</td>
+                      <td>{employee.department}</td>
+                      <td>{employee.role}</td>
+                      <td>{employee.location}</td>
+                      <td>{employee.manager}</td>
+                      <td>{employee.hire_date}</td>
+                      <td>{employee.status}</td>
+                    </>
+                  )}
                   <td className="row-actions">
-                    {user.role === "admin" && <button className="secondary-btn compact" type="button" onClick={() => setEditing(employee)}>Edit</button>}
-                    {user.role === "admin" && <button className="danger-btn" type="button" onClick={() => remove(employee.employee_id)}><Trash2 size={14} />Delete</button>}
+                    {user.role === "admin" && editingId === employee.employee_id && (
+                      <>
+                        <button className="secondary-btn compact" type="button" onClick={saveInlineEmployee}><Save size={14} />Save</button>
+                        <button className="secondary-btn compact" type="button" onClick={() => { setEditingId(null); setDraftEmployee(null); }}><X size={14} />Cancel</button>
+                      </>
+                    )}
+                    {user.role === "admin" && editingId !== employee.employee_id && <button className="secondary-btn compact" type="button" onClick={() => startEditing(employee)}><Pencil size={14} />Edit</button>}
+                    {user.role === "admin" && editingId !== employee.employee_id && <button className="danger-btn" type="button" onClick={() => remove(employee.employee_id)}><Trash2 size={14} />Delete</button>}
                   </td>
                 </tr>
               ))}
@@ -165,7 +214,8 @@ function EmployeesPanel({ token, user, setMessage, afterChange }: Pick<Managemen
 
 function ProjectsPanel({ token, setMessage, afterChange }: Pick<ManagementProps, "token" | "setMessage" | "afterChange">) {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [editing, setEditing] = useState<Project | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [draftProject, setDraftProject] = useState<Project | null>(null);
 
   async function load() {
     setProjects(await getProjects(token));
@@ -180,16 +230,11 @@ function ProjectsPanel({ token, setMessage, afterChange }: Pick<ManagementProps,
     event.preventDefault();
     try {
       const payload = formValues(event.currentTarget);
-      if (editing) {
-        await updateProject(token, editing.id, payload);
-      } else {
-        await saveProject(token, payload);
-      }
+      await saveProject(token, payload);
       event.currentTarget.reset();
-      setEditing(null);
       await load();
       afterChange();
-      setMessage(editing ? "Project updated." : "Project created.");
+      setMessage("Project created.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not save project.");
     }
@@ -206,17 +251,46 @@ function ProjectsPanel({ token, setMessage, afterChange }: Pick<ManagementProps,
     }
   }
 
+  function startEditing(project: Project) {
+    setEditingId(project.id);
+    setDraftProject({ ...project });
+  }
+
+  function updateDraft(key: keyof Project, value: string) {
+    setDraftProject((current) => (current ? { ...current, [key]: value } : current));
+  }
+
+  async function saveInlineProject() {
+    if (!draftProject) {
+      return;
+    }
+    try {
+      await updateProject(token, draftProject.id, {
+        name: draftProject.name,
+        owner: draftProject.owner,
+        status: draftProject.status,
+        description: draftProject.description
+      });
+      setEditingId(null);
+      setDraftProject(null);
+      await load();
+      afterChange();
+      setMessage("Project updated inline.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not update project.");
+    }
+  }
+
   return (
     <section className="management-grid">
-      <form key={editing?.id || "new-project"} className="panel form-panel" onSubmit={submit}>
-        <header><div className="panel-title"><FolderKanban size={18} /><h2>{editing ? "Update Project" : "Create Project"}</h2></div></header>
+      <form className="panel form-panel" onSubmit={submit}>
+        <header><div className="panel-title"><FolderKanban size={18} /><h2>Create Project</h2></div></header>
         <div className="form-grid">
-          <label>Project name<input name="name" defaultValue={editing?.name} required /></label>
-          <label>Owner<input name="owner" defaultValue={editing?.owner} /></label>
-          <label>Status<select name="status" defaultValue={editing?.status || "Active"}><option>Active</option><option>Paused</option><option>Archived</option></select></label>
-          <label className="span-2">Description<input name="description" defaultValue={editing?.description} /></label>
-          <button className="primary-btn form-submit" type="submit"><Save size={16} />{editing ? "Update project" : "Save project"}</button>
-          {editing && <button className="secondary-btn form-submit" type="button" onClick={() => setEditing(null)}>Cancel</button>}
+          <label>Project name<input name="name" required /></label>
+          <label>Owner<input name="owner" /></label>
+          <label>Status<select name="status" defaultValue="Active"><option>Active</option><option>Paused</option><option>Archived</option></select></label>
+          <label className="span-2">Description<input name="description" /></label>
+          <button className="primary-btn form-submit" type="submit"><Save size={16} />Save project</button>
         </div>
       </form>
       <article className="panel table-panel wide">
@@ -226,8 +300,31 @@ function ProjectsPanel({ token, setMessage, afterChange }: Pick<ManagementProps,
             <thead><tr><th>Name</th><th>Owner</th><th>Status</th><th>Description</th><th></th></tr></thead>
             <tbody>{projects.map((project) => (
               <tr key={project.id}>
-                <td>{project.name}</td><td>{project.owner}</td><td>{project.status}</td><td>{project.description}</td>
-                <td className="row-actions"><button className="secondary-btn compact" type="button" onClick={() => setEditing(project)}>Edit</button><button className="danger-btn" type="button" onClick={() => remove(project)}><Trash2 size={14} />Delete</button></td>
+                {editingId === project.id && draftProject ? (
+                  <>
+                    <td><input aria-label="Project name" value={draftProject.name} onChange={(event) => updateDraft("name", event.target.value)} /></td>
+                    <td><input aria-label="Owner" value={draftProject.owner} onChange={(event) => updateDraft("owner", event.target.value)} /></td>
+                    <td><select aria-label="Status" value={draftProject.status} onChange={(event) => updateDraft("status", event.target.value)}><option>Active</option><option>Paused</option><option>Archived</option></select></td>
+                    <td><input aria-label="Description" value={draftProject.description} onChange={(event) => updateDraft("description", event.target.value)} /></td>
+                  </>
+                ) : (
+                  <>
+                    <td>{project.name}</td><td>{project.owner}</td><td>{project.status}</td><td>{project.description}</td>
+                  </>
+                )}
+                <td className="row-actions">
+                  {editingId === project.id ? (
+                    <>
+                      <button className="secondary-btn compact" type="button" onClick={saveInlineProject}><Save size={14} />Save</button>
+                      <button className="secondary-btn compact" type="button" onClick={() => { setEditingId(null); setDraftProject(null); }}><X size={14} />Cancel</button>
+                    </>
+                  ) : (
+                    <>
+                      <button className="secondary-btn compact" type="button" onClick={() => startEditing(project)}><Pencil size={14} />Edit</button>
+                      <button className="danger-btn" type="button" onClick={() => remove(project)}><Trash2 size={14} />Delete</button>
+                    </>
+                  )}
+                </td>
               </tr>
             ))}</tbody>
           </table>
@@ -369,7 +466,7 @@ function LogsPanel({ filters, options, token, user, setMessage, afterChange }: O
         <div className="form-section">
           <span>Work details</span>
           <div className="form-grid">
-            {user.role === "admin" && (
+            {user.role !== "employee" && (
               <label className="span-2">Employee<select name="employee_id" required>{(options?.employees || []).map((employee) => <option key={employee.id} value={employee.id}>{employee.label}</option>)}</select></label>
             )}
             <label>Date<input name="log_date" type="date" defaultValue={today()} required /></label>
@@ -507,8 +604,8 @@ function AttendancePanel({ filters, options, token, user, setMessage, afterChang
               <label className="span-2">Employee<select name="employee_id" required>{(options?.employees || []).map((employee) => <option key={employee.id} value={employee.id}>{employee.label}</option>)}</select></label>
               <label>Date<input name="work_date" type="date" defaultValue={today()} required /></label>
               <label>Status<select name="status" defaultValue="Present"><option>Present</option><option>Leave</option><option>Absent</option></select></label>
-              <label>Check in<input name="check_in" type="time" /></label>
-              <label>Check out<input name="check_out" type="time" /></label>
+              <label>Check in<input name="check_in" type="time" defaultValue={currentTime()} /></label>
+              <label>Check out<input name="check_out" type="time" defaultValue={currentTime()} /></label>
               <label>Late minutes<input name="late_minutes" type="number" min="0" defaultValue="0" /></label>
               <button className="primary-btn form-submit" type="submit"><Save size={16} />Save attendance</button>
             </div>

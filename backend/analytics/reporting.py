@@ -37,7 +37,7 @@ def html_report(filters: Filters) -> str:
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Employee Analytics Report</title>
+  <title>WorkPulse Report</title>
   <style>
     body {{ font-family: Inter, Arial, sans-serif; margin: 32px; color: #111827; }}
     h1 {{ margin-bottom: 4px; }}
@@ -54,7 +54,7 @@ def html_report(filters: Filters) -> str:
   </style>
 </head>
 <body>
-  <h1>Employee Data Analytics Report</h1>
+  <h1>WorkPulse Report</h1>
   <p class="muted">Generated from the Django analytics API.</p>
   <p>{escape(service.executive_summary(filters))}</p>
   <div class="kpis">

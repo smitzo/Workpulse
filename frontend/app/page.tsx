@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-import { AppShell } from "@/components/AppShell";
-import { AuthPanel } from "@/components/AuthPanel";
+import { AuthPanel } from "@/features/auth/AuthPanel";
+import { AppShell } from "@/features/layout/AppShell";
 import type { AuthPayload } from "@/types/api";
 
 export default function HomePage() {

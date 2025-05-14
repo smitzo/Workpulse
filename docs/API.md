@@ -12,7 +12,7 @@ Authorization: Token <token>
 
 - `POST /auth/login/` with `{ "username": "...", "password": "..." }`
 - `POST /auth/signup/` with username, password, name, department, role, location, manager, hire_date
-- `POST /auth/demo/` seeds demo data if needed and returns the demo admin token
+- `POST /auth/demo/` with `{ "role": "employee" | "manager" | "admin" }` seeds demo data if needed and returns a matching demo token
 - `GET /auth/me/` returns the authenticated user profile
 
 ## Analytics

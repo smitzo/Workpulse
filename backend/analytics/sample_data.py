@@ -41,12 +41,9 @@ IDEAL_TIMES = [
 ]
 
 USERS = [
-    ("admin", "admin123", "admin", None),
-    ("EMP005", "pass123", "manager", "EMP005"),
-    ("EMP006", "pass123", "manager", "EMP006"),
-    ("EMP001", "pass123", "employee", "EMP001"),
-    ("EMP002", "pass123", "employee", "EMP002"),
-    ("EMP003", "pass123", "employee", "EMP003"),
+    ("demoadmin", "demo", "admin", None),
+    ("demomanager", "demo", "manager", "EMP006"),
+    ("demouser", "demo", "employee", "EMP001"),
 ]
 
 EMPLOYEES = [

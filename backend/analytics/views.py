@@ -10,9 +10,11 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.authtoken.models import Token
 
 from analytics.models import Attendance, AuditLog, Employee, Project, UserProfile, WorkLog
 from analytics.reporting import html_report
+from analytics.sample_data import USERS as DEMO_USERS
 from analytics.serializers import (
     AttendanceSerializer,
     AdminUserSerializer,
@@ -71,16 +73,46 @@ class LoginView(APIView):
         return Response(auth_payload(serializer.validated_data["user"]))
 
 
+DEMO_USERS_BY_ROLE = {
+    UserProfile.ROLE_ADMIN: "demoadmin",
+    UserProfile.ROLE_MANAGER: "demomanager",
+    UserProfile.ROLE_EMPLOYEE: "demouser",
+}
+
+
+def ensure_demo_user(username: str) -> User:
+    password, role, employee_id = next(
+        (item_password, item_role, item_employee_id)
+        for item_username, item_password, item_role, item_employee_id in DEMO_USERS
+        if item_username == username
+    )
+    user, _created = User.objects.update_or_create(
+        username=username,
+        defaults={
+            "is_staff": role == UserProfile.ROLE_ADMIN,
+            "is_superuser": role == UserProfile.ROLE_ADMIN,
+            "first_name": "Demo",
+            "last_name": role.title(),
+        },
+    )
+    user.set_password(password)
+    user.save(update_fields=["password", "is_staff", "is_superuser", "first_name", "last_name"])
+    UserProfile.objects.update_or_create(user=user, defaults={"role": role, "employee_id": employee_id})
+    Token.objects.get_or_create(user=user)
+    return user
+
+
 class DemoLoginView(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, _request):
+    def post(self, request):
         if not Employee.objects.exists():
             call_command("seed_demo")
-        user = User.objects.filter(username="admin").first()
+        demo_role = request.data.get("role", UserProfile.ROLE_ADMIN)
+        username = DEMO_USERS_BY_ROLE.get(demo_role, DEMO_USERS_BY_ROLE[UserProfile.ROLE_ADMIN])
+        user = User.objects.filter(username=username).first()
         if user is None:
-            call_command("seed_demo")
-            user = User.objects.get(username="admin")
+            user = ensure_demo_user(username)
         return Response(auth_payload(user))
 
 

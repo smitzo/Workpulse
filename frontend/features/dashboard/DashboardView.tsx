@@ -17,7 +17,7 @@ import {
 
 import type { Dashboard } from "@/types/api";
 
-const palette = ["#2563eb", "#0f9f6e", "#f97316", "#7c3aed", "#dc2626", "#0891b2", "#b7791f", "#4f46e5"];
+const palette = ["#0ea5e9", "#14b8a6", "#f59e0b", "#ef4444", "#22c55e", "#64748b", "#e11d48", "#2563eb"];
 
 type DashboardViewProps = {
   dashboard: Dashboard;
@@ -39,8 +39,32 @@ function Kpi({ label, value, accent }: { label: string; value: string | number; 
 
 export function DashboardView({ dashboard, role = "admin" }: DashboardViewProps) {
   const summary = dashboard.summary;
+  const title = role === "employee" ? "My work cockpit" : role === "manager" ? "Team command center" : "Company operating view";
+  const detail =
+    role === "employee"
+      ? "Track your attendance, logged hours, project focus, and recent productivity in one place."
+      : role === "manager"
+      ? "See team delivery, attendance pressure, overtime, and performance signals without digging through spreadsheets."
+      : "Monitor workforce capacity, attendance reliability, project effort, and productivity across the organization.";
+  const healthScore = Math.round((summary.avg_productivity + summary.attendance_rate) / 2);
+
   return (
     <section className="dashboard-grid">
+      <article className="dashboard-hero">
+        <div>
+          <span className="eyebrow">{role} dashboard</span>
+          <h2>{title}</h2>
+          <p>{detail}</p>
+        </div>
+        <div className="health-card">
+          <span>Work health</span>
+          <strong>{healthScore}%</strong>
+          <div className="health-bar" aria-hidden="true">
+            <span style={{ width: `${Math.min(100, Math.max(0, healthScore))}%` }} />
+          </div>
+        </div>
+      </article>
+
       <div className="kpi-grid">
         <Kpi label="Hours" value={summary.total_hours} />
         <Kpi label="Productivity" value={`${summary.avg_productivity}%`} accent="var(--primary)" />

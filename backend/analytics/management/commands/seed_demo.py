@@ -27,7 +27,19 @@ class Command(BaseCommand):
             Token.objects.all().delete()
             UserProfile.objects.all().delete()
             User.objects.filter(id__in=profile_user_ids).delete()
-            User.objects.filter(username__in=["admin", "EMP001", "EMP002", "EMP003", "EMP005", "EMP006"]).delete()
+            User.objects.filter(
+                username__in=[
+                    "admin",
+                    "EMP001",
+                    "EMP002",
+                    "EMP003",
+                    "EMP005",
+                    "EMP006",
+                    "demoadmin",
+                    "demomanager",
+                    "demouser",
+                ]
+            ).delete()
             Attendance.objects.all().delete()
             WorkLog.objects.all().delete()
             Project.objects.all().delete()
@@ -132,8 +144,8 @@ class Command(BaseCommand):
                 defaults={
                     "is_staff": role == UserProfile.ROLE_ADMIN,
                     "is_superuser": role == UserProfile.ROLE_ADMIN,
-                    "first_name": "Demo" if role == UserProfile.ROLE_ADMIN else "",
-                    "last_name": "Admin" if role == UserProfile.ROLE_ADMIN else "",
+                    "first_name": "Demo",
+                    "last_name": role.title(),
                 },
             )
             user.set_password(password)

@@ -60,9 +60,10 @@ npm run start
 
 ## 4. Demo Data
 
-The frontend demo button calls `POST /api/auth/demo/`. If no employees exist, the
-backend seeds demo data and returns an admin token. On production databases with
-real data, run `seed_demo` only when you intentionally want sample records.
+The frontend demo buttons call `POST /api/auth/demo/` with `employee`, `manager`,
+or `admin`. If no employees exist, the backend seeds demo data and returns a
+matching demo token. On production databases with real data, run `seed_demo` only
+when you intentionally want sample records.
 
 ## 5. Production Checklist
 
@@ -71,4 +72,4 @@ real data, run `seed_demo` only when you intentionally want sample records.
 - Set explicit `DJANGO_ALLOWED_HOSTS`.
 - Set frontend origin in `CORS_ALLOWED_ORIGINS`.
 - Run migrations before opening the frontend.
-- Create a real admin user or rotate demo passwords before sharing the system beyond demos.
+- Create a real admin user or disable demo access before sharing the system beyond demos.

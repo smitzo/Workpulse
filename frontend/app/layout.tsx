@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Employee Analytics",
-  description: "Employee performance, attendance, and workload analytics dashboard"
+  title: "WorkPulse",
+  description: "Modern attendance, timesheet, project, and work analytics platform"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

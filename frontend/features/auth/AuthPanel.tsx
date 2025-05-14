@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, LogIn, Sparkles, UserPlus } from "lucide-react";
+import { ActivitySquare, BriefcaseBusiness, LogIn, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
 import type { FormEvent } from "react";
 import { useState } from "react";
 
@@ -10,6 +10,14 @@ import type { AuthPayload } from "@/types/api";
 type AuthPanelProps = {
   onAuthenticated: (payload: AuthPayload) => void;
 };
+
+type PreviewRole = "employee" | "manager" | "admin";
+
+function localDate() {
+  const date = new Date();
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().slice(0, 10);
+}
 
 export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -34,13 +42,13 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
     }
   }
 
-  async function enterDemo() {
+  async function enterWorkspace(role: PreviewRole) {
     setLoading(true);
     setMessage("");
     try {
-      onAuthenticated(await demoLogin());
+      onAuthenticated(await demoLogin(role));
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not enter demo mode.");
+      setMessage(error instanceof Error ? error.message : "Could not open workspace.");
     } finally {
       setLoading(false);
     }
@@ -48,17 +56,36 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
 
   return (
     <main className="auth-screen">
-      <section className="auth-hero" aria-label="Employee analytics overview">
+      <section className="auth-hero" aria-label="WorkPulse overview">
         <div className="brand-mark">
-          <BarChart3 size={28} />
+          <ActivitySquare size={30} />
         </div>
-        <h1>Employee Analytics</h1>
+        <h1>WorkPulse</h1>
         <p>
-          Monitor performance, attendance, overtime, workload balance, and executive reports from one web dashboard.
+          A modern work hub for attendance, timesheets, projects, team visibility, and clean operational reports.
         </p>
       </section>
 
       <section className="auth-card">
+        <div className="role-entry">
+          <span>Open workspace as</span>
+          <div className="role-entry-grid">
+            <button disabled={loading} type="button" onClick={() => enterWorkspace("employee")}>
+              <BriefcaseBusiness size={18} />
+              Employee
+            </button>
+            <button disabled={loading} type="button" onClick={() => enterWorkspace("manager")}>
+              <UsersRound size={18} />
+              Manager
+            </button>
+            <button disabled={loading} type="button" onClick={() => enterWorkspace("admin")}>
+              <ShieldCheck size={18} />
+              Admin
+            </button>
+          </div>
+          <p>Instant access with sample workspace data. No credentials required.</p>
+        </div>
+
         <div className="auth-tabs" role="tablist" aria-label="Authentication mode">
           <button className={mode === "login" ? "active" : ""} onClick={() => setMode("login")} type="button">
             <LogIn size={16} />
@@ -107,7 +134,7 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
                 </label>
                 <label>
                   Hire date
-                  <input name="hire_date" type="date" required />
+                  <input name="hire_date" type="date" defaultValue={localDate()} required />
                 </label>
               </div>
               <label>
@@ -121,16 +148,6 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
             {mode === "login" ? "Sign in" : "Create account"}
           </button>
         </form>
-
-        <div className="demo-entry">
-          <button className="demo-btn" disabled={loading} type="button" onClick={enterDemo}>
-            <Sparkles size={18} />
-            Explore demo dashboard
-          </button>
-          <p>
-            No setup needed. This opens a seeded admin demo with sample employees, attendance, timesheets, charts, and reports.
-          </p>
-        </div>
 
         {message && <p className="form-error">{message}</p>}
       </section>

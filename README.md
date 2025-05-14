@@ -1,30 +1,31 @@
-# Employee Data Analytics Platform
+# WorkPulse
 
-A full-stack employee analytics platform with a Django REST API, Postgres/Neon
-support, token authentication, retained demo data, and a Next.js dashboard with
-light and dark themes.
+A full-stack work management platform with a Django REST API, Postgres/Neon
+support, token authentication, retained demo data, and a polished Next.js
+dashboard with light and dark themes.
 
 ## What It Includes
 
 - Django backend with modular analytics models, services, serializers, and API views.
 - Postgres-ready configuration through `DATABASE_URL`; Neon works with `sslmode=require`.
-- Token authentication, login, signup, and a one-click demo entry.
-- Deterministic demo data for employees, work logs, attendance, projects, task groups, users, and ideal task times.
+- Token authentication, login, signup, and three demo POV entries.
+- Deterministic demo data for employees, work logs, attendance, projects, task groups, demo users, and ideal task times.
 - Next.js frontend with dashboard KPIs, charts, reports, employee management, timesheets, attendance, filters, and theme toggle.
 - Admin, manager, and employee scoping. Admins see all data, managers see direct reports, and employees are restricted to their own records.
+- Inline editing for employee and project list views.
 - HTML report export from the API.
 
 ## Demo Access
 
-The login page includes an **Explore demo dashboard** button. It seeds demo data
-if needed and signs in as the demo admin so reviewers can immediately see the
-dashboard and reports.
+The login page includes Employee, Manager, and Admin demo buttons. They seed demo
+data if needed and sign in with the correct role so reviewers can inspect the app
+from three points of view.
 
 Manual credentials are also available after running `seed_demo`:
 
-- Admin: `admin` / `admin123`
-- Manager: `EMP006` / `pass123`
-- Employee: `EMP001` / `pass123`
+- Admin: `demoadmin` / `demo`
+- Manager: `demomanager` / `demo`
+- Employee: `demouser` / `demo`
 
 ## Project Structure
 
@@ -35,7 +36,7 @@ backend/
   requirements.txt  Backend dependencies
 frontend/
   app/              Next.js App Router entry
-  components/       Reusable UI modules
+  features/         Feature modules: auth, dashboard, layout, management, reports
   lib/              API client
   types/            Shared TypeScript API types
 docs/

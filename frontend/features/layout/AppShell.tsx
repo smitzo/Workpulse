@@ -1,12 +1,12 @@
 "use client";
 
-import { BarChart3, Bell, Building2, ClipboardList, LayoutDashboard, LogOut, Moon, RefreshCw, ShieldCheck, Sun, UserRoundCog, Users } from "lucide-react";
+import { ActivitySquare, BarChart3, Bell, Building2, ClipboardList, LayoutDashboard, LogOut, Moon, RefreshCw, ShieldCheck, Sun, UserRoundCog, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { DashboardView } from "@/components/DashboardView";
-import { ManagementViews } from "@/components/ManagementViews";
-import { ReportsView } from "@/components/ReportsView";
+import { DashboardView } from "@/features/dashboard/DashboardView";
+import { ManagementViews } from "@/features/management/ManagementViews";
+import { ReportsView } from "@/features/reports/ReportsView";
 import { getDashboard, getInsights, getOptions } from "@/lib/api";
 import type { AuthPayload, Dashboard, Filters, InsightsPayload, OptionsPayload } from "@/types/api";
 
@@ -95,8 +95,8 @@ export function AppShell({ auth, onLogout }: AppShellProps) {
     <main className="app-shell">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <span className="app-mark">EA</span>
-          <span>Employee Analytics</span>
+          <span className="app-mark"><ActivitySquare size={18} /></span>
+          <span>WorkPulse</span>
         </div>
         <nav>
           {navItems.map(([key, label, Icon]) => (

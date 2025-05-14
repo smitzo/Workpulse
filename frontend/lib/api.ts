@@ -45,7 +45,12 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   const contentType = response.headers.get("content-type") || "";
   const payload = contentType.includes("application/json") ? await response.json() : await response.text();
   if (!response.ok) {
-    const message = typeof payload === "string" ? payload : payload.detail || payload.non_field_errors?.[0] || "Request failed";
+    const message =
+      typeof payload === "string"
+        ? payload.includes("<!doctype html>")
+          ? `Backend rejected the request (${response.status}). Check Render host and environment settings.`
+          : payload
+        : payload.detail || payload.non_field_errors?.[0] || "Request failed";
     throw new ApiError(message, response.status);
   }
   return payload as T;
@@ -58,8 +63,11 @@ export function login(username: string, password: string) {
   });
 }
 
-export function demoLogin() {
-  return apiFetch<AuthPayload>("/auth/demo/", { method: "POST" });
+export function demoLogin(role: "employee" | "manager" | "admin" = "admin") {
+  return apiFetch<AuthPayload>("/auth/demo/", {
+    method: "POST",
+    body: JSON.stringify({ role })
+  });
 }
 
 export function signup(payload: Record<string, string>) {
