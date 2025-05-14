@@ -209,10 +209,57 @@ textarea {
   border-bottom: 1px solid var(--line);
 }
 
-.role-entry > span {
+.role-entry-heading {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.role-entry-heading > span {
   color: var(--ink);
   font-size: 13px;
   font-weight: 900;
+}
+
+.demo-info summary {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--primary-strong);
+  background: var(--surface-2);
+  cursor: pointer;
+  list-style: none;
+}
+
+.demo-info summary::-webkit-details-marker {
+  display: none;
+}
+
+.demo-info[open] summary {
+  color: var(--primary-ink);
+  background: var(--primary-strong);
+}
+
+.demo-info div {
+  position: absolute;
+  z-index: 10;
+  top: 38px;
+  right: 0;
+  width: min(360px, calc(100vw - 72px));
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 .role-entry-grid {
@@ -222,7 +269,7 @@ textarea {
 }
 
 .role-entry-grid button {
-  min-height: 48px;
+  min-height: 54px;
   width: 100%;
   display: inline-flex;
   align-items: center;

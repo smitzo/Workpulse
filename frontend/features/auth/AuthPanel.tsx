@@ -1,6 +1,6 @@
 "use client";
 
-import { ActivitySquare, BriefcaseBusiness, LogIn, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
+import { ActivitySquare, BriefcaseBusiness, Info, LogIn, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
 import type { FormEvent } from "react";
 import { useState } from "react";
 
@@ -68,22 +68,31 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
 
       <section className="auth-card">
         <div className="role-entry">
-          <span>Open workspace as</span>
+          <div className="role-entry-heading">
+            <span>Open demo workspace as</span>
+            <details className="demo-info">
+              <summary aria-label="About demo data" title="About demo data"><Info size={17} /></summary>
+              <div>
+                This project is deployed on Render&apos;s free tier, so the backend may go to sleep after a period of inactivity.
+                These browser-based demo workspaces let you sample the UI and CRUD functionality immediately without backend or database access.
+              </div>
+            </details>
+          </div>
           <div className="role-entry-grid">
             <button disabled={loading} type="button" onClick={() => enterWorkspace("employee")}>
               <BriefcaseBusiness size={18} />
-              Employee
+              Demo Employee
             </button>
             <button disabled={loading} type="button" onClick={() => enterWorkspace("manager")}>
               <UsersRound size={18} />
-              Manager
+              Demo Manager
             </button>
             <button disabled={loading} type="button" onClick={() => enterWorkspace("admin")}>
               <ShieldCheck size={18} />
-              Admin
+              Demo Admin
             </button>
           </div>
-          <p>Instant access with sample workspace data. No credentials required.</p>
+          <p>Instant access with editable sample data stored in your browser. No credentials required.</p>
         </div>
 
         <div className="auth-tabs" role="tablist" aria-label="Authentication mode">

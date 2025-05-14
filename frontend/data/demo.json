@@ -65,6 +65,72 @@
       "manager_employee_id": null,
       "hire_date": "2021-04-12",
       "status": "On Leave"
+    },
+    {
+      "employee_id": "EMP004",
+      "name": "Nisha Patel",
+      "department": "People Operations",
+      "role": "HR Business Partner",
+      "location": "Ahmedabad",
+      "manager": "Anita Rao",
+      "manager_employee_id": null,
+      "hire_date": "2019-08-19",
+      "status": "Active"
+    },
+    {
+      "employee_id": "EMP007",
+      "name": "Vikram Singh",
+      "department": "Engineering",
+      "role": "Frontend Developer",
+      "location": "Pune",
+      "manager": "Priya Menon",
+      "manager_employee_id": "EMP006",
+      "hire_date": "2023-01-09",
+      "status": "Active"
+    },
+    {
+      "employee_id": "EMP009",
+      "name": "Ishita Bose",
+      "department": "Marketing",
+      "role": "Growth Specialist",
+      "location": "Kolkata",
+      "manager": "Anita Rao",
+      "manager_employee_id": null,
+      "hire_date": "2022-06-27",
+      "status": "Active"
+    },
+    {
+      "employee_id": "EMP010",
+      "name": "Arjun Nair",
+      "department": "Sales",
+      "role": "Customer Success Manager",
+      "location": "Kochi",
+      "manager": "Rohan Das",
+      "manager_employee_id": "EMP005",
+      "hire_date": "2021-10-04",
+      "status": "Active"
+    },
+    {
+      "employee_id": "EMP011",
+      "name": "Sana Sheikh",
+      "department": "Finance",
+      "role": "Payroll Specialist",
+      "location": "Hyderabad",
+      "manager": "Dev Malhotra",
+      "manager_employee_id": "EMP008",
+      "hire_date": "2023-04-17",
+      "status": "Active"
+    },
+    {
+      "employee_id": "EMP012",
+      "name": "Rahul Verma",
+      "department": "Engineering",
+      "role": "DevOps Engineer",
+      "location": "Remote",
+      "manager": "Priya Menon",
+      "manager_employee_id": "EMP006",
+      "hire_date": "2020-12-07",
+      "status": "Inactive"
     }
   ],
   "projects": [
@@ -103,6 +169,33 @@
       "description": "Quarterly forecast and finance planning.",
       "created_at": "2026-04-04T09:30:00Z",
       "updated_at": "2026-06-05T10:15:00Z"
+    },
+    {
+      "id": 5,
+      "name": "Employee Experience",
+      "owner": "Nisha Patel",
+      "status": "Active",
+      "description": "Onboarding, engagement, and policy self-service improvements.",
+      "created_at": "2026-02-18T09:30:00Z",
+      "updated_at": "2026-06-10T09:40:00Z"
+    },
+    {
+      "id": 6,
+      "name": "Growth Campaign",
+      "owner": "Ishita Bose",
+      "status": "Active",
+      "description": "Multi-channel campaign planning and conversion reporting.",
+      "created_at": "2026-03-24T09:30:00Z",
+      "updated_at": "2026-06-11T08:25:00Z"
+    },
+    {
+      "id": 7,
+      "name": "Cloud Reliability",
+      "owner": "Rahul Verma",
+      "status": "Archived",
+      "description": "Infrastructure observability and deployment resilience program.",
+      "created_at": "2025-11-10T09:30:00Z",
+      "updated_at": "2026-05-28T16:15:00Z"
     }
   ],
   "logs": [
@@ -117,7 +210,19 @@
     {"id": 9, "employee_id": "EMP006", "log_date": "2026-06-10", "project": "Payroll Revamp", "task_type": "Review", "hours": "7.00", "productivity_score": 92, "overtime_hours": "0.00", "notes": "Architecture review"},
     {"id": 10, "employee_id": "EMP003", "log_date": "2026-06-11", "project": "CRM Rollout", "task_type": "Client Support", "hours": "8.00", "productivity_score": 87, "overtime_hours": "0.00", "notes": "Account onboarding"},
     {"id": 11, "employee_id": "EMP001", "log_date": "2026-06-11", "project": "Payroll Revamp", "task_type": "Documentation", "hours": "7.75", "productivity_score": 94, "overtime_hours": "0.00", "notes": "API documentation"},
-    {"id": 12, "employee_id": "EMP002", "log_date": "2026-06-11", "project": "Payroll Revamp", "task_type": "Training", "hours": "6.50", "productivity_score": 90, "overtime_hours": "0.00", "notes": "Release walkthrough"}
+    {"id": 12, "employee_id": "EMP002", "log_date": "2026-06-11", "project": "Payroll Revamp", "task_type": "Training", "hours": "6.50", "productivity_score": 90, "overtime_hours": "0.00", "notes": "Release walkthrough"},
+    {"id": 13, "employee_id": "EMP007", "log_date": "2026-06-08", "project": "Payroll Revamp", "task_type": "Project Work", "hours": "7.75", "productivity_score": 89, "overtime_hours": "0.25", "notes": "Completed responsive dashboard states"},
+    {"id": 14, "employee_id": "EMP004", "log_date": "2026-06-08", "project": "Employee Experience", "task_type": "Documentation", "hours": "6.25", "productivity_score": 87, "overtime_hours": "0.00", "notes": "Updated onboarding handbook"},
+    {"id": 15, "employee_id": "EMP009", "log_date": "2026-06-09", "project": "Growth Campaign", "task_type": "Planning", "hours": "7.00", "productivity_score": 85, "overtime_hours": "0.00", "notes": "Finalized campaign segments"},
+    {"id": 16, "employee_id": "EMP010", "log_date": "2026-06-09", "project": "CRM Rollout", "task_type": "Client Support", "hours": "8.25", "productivity_score": 90, "overtime_hours": "0.25", "notes": "Led customer success workshop"},
+    {"id": 17, "employee_id": "EMP011", "log_date": "2026-06-10", "project": "Payroll Revamp", "task_type": "Review", "hours": "7.25", "productivity_score": 92, "overtime_hours": "0.00", "notes": "Validated payroll exception cases"},
+    {"id": 18, "employee_id": "EMP012", "log_date": "2026-06-10", "project": "Cloud Reliability", "task_type": "Project Work", "hours": "5.50", "productivity_score": 78, "overtime_hours": "0.00", "notes": "Archived deployment runbooks"},
+    {"id": 19, "employee_id": "EMP007", "log_date": "2026-06-11", "project": "Data Quality", "task_type": "Review", "hours": "7.50", "productivity_score": 91, "overtime_hours": "0.00", "notes": "Reviewed analytics visual states"},
+    {"id": 20, "employee_id": "EMP004", "log_date": "2026-06-11", "project": "Employee Experience", "task_type": "Client Support", "hours": "6.75", "productivity_score": 88, "overtime_hours": "0.00", "notes": "Hosted manager office hours"},
+    {"id": 21, "employee_id": "EMP009", "log_date": "2026-06-11", "project": "Growth Campaign", "task_type": "Documentation", "hours": "7.25", "productivity_score": 86, "overtime_hours": "0.00", "notes": "Prepared channel performance brief"},
+    {"id": 22, "employee_id": "EMP010", "log_date": "2026-06-11", "project": "CRM Rollout", "task_type": "Training", "hours": "7.00", "productivity_score": 89, "overtime_hours": "0.00", "notes": "Delivered account team training"},
+    {"id": 23, "employee_id": "EMP011", "log_date": "2026-06-11", "project": "Q2 Forecast", "task_type": "Planning", "hours": "7.75", "productivity_score": 93, "overtime_hours": "0.25", "notes": "Reconciled forecast assumptions"},
+    {"id": 24, "employee_id": "EMP006", "log_date": "2026-06-11", "project": "Cloud Reliability", "task_type": "Planning", "hours": "6.75", "productivity_score": 91, "overtime_hours": "0.00", "notes": "Completed reliability retrospective"}
   ],
   "attendance": [
     {"id": 1, "employee_id": "EMP001", "work_date": "2026-06-10", "status": "Present", "check_in": "09:32:00", "check_out": "18:04:00", "late_minutes": 2},
@@ -131,16 +236,34 @@
     {"id": 9, "employee_id": "EMP006", "work_date": "2026-06-11", "status": "Present", "check_in": "09:20:00", "check_out": "18:15:00", "late_minutes": 0},
     {"id": 10, "employee_id": "EMP003", "work_date": "2026-06-11", "status": "Present", "check_in": "09:34:00", "check_out": "18:12:00", "late_minutes": 4},
     {"id": 11, "employee_id": "EMP005", "work_date": "2026-06-11", "status": "Present", "check_in": "09:27:00", "check_out": "18:00:00", "late_minutes": 0},
-    {"id": 12, "employee_id": "EMP008", "work_date": "2026-06-11", "status": "Leave", "check_in": null, "check_out": null, "late_minutes": 0}
+    {"id": 12, "employee_id": "EMP008", "work_date": "2026-06-11", "status": "Leave", "check_in": null, "check_out": null, "late_minutes": 0},
+    {"id": 13, "employee_id": "EMP004", "work_date": "2026-06-10", "status": "Present", "check_in": "09:22:00", "check_out": "17:51:00", "late_minutes": 0},
+    {"id": 14, "employee_id": "EMP007", "work_date": "2026-06-10", "status": "Present", "check_in": "09:31:00", "check_out": "18:08:00", "late_minutes": 1},
+    {"id": 15, "employee_id": "EMP009", "work_date": "2026-06-10", "status": "Present", "check_in": "09:45:00", "check_out": "18:30:00", "late_minutes": 15},
+    {"id": 16, "employee_id": "EMP010", "work_date": "2026-06-10", "status": "Present", "check_in": "09:25:00", "check_out": "18:05:00", "late_minutes": 0},
+    {"id": 17, "employee_id": "EMP011", "work_date": "2026-06-10", "status": "Present", "check_in": "09:29:00", "check_out": "17:55:00", "late_minutes": 0},
+    {"id": 18, "employee_id": "EMP012", "work_date": "2026-06-10", "status": "Absent", "check_in": null, "check_out": null, "late_minutes": 0},
+    {"id": 19, "employee_id": "EMP004", "work_date": "2026-06-11", "status": "Present", "check_in": "09:18:00", "check_out": "17:48:00", "late_minutes": 0},
+    {"id": 20, "employee_id": "EMP007", "work_date": "2026-06-11", "status": "Present", "check_in": "09:27:00", "check_out": "18:11:00", "late_minutes": 0},
+    {"id": 21, "employee_id": "EMP009", "work_date": "2026-06-11", "status": "Leave", "check_in": null, "check_out": null, "late_minutes": 0},
+    {"id": 22, "employee_id": "EMP010", "work_date": "2026-06-11", "status": "Present", "check_in": "09:38:00", "check_out": "18:22:00", "late_minutes": 8},
+    {"id": 23, "employee_id": "EMP011", "work_date": "2026-06-11", "status": "Present", "check_in": "09:21:00", "check_out": "18:01:00", "late_minutes": 0},
+    {"id": 24, "employee_id": "EMP012", "work_date": "2026-06-11", "status": "Absent", "check_in": null, "check_out": null, "late_minutes": 0}
   ],
   "users": [
     {"id": 1, "username": "demouser", "email": "employee@workpulse.demo", "access_role": "employee", "employee_id": "EMP001", "name": "Aarav Sharma", "department": "Engineering", "is_active": true},
     {"id": 2, "username": "demomanager", "email": "manager@workpulse.demo", "access_role": "manager", "employee_id": "EMP006", "name": "Priya Menon", "department": "Engineering", "is_active": true},
-    {"id": 3, "username": "demoadmin", "email": "admin@workpulse.demo", "access_role": "admin", "employee_id": "", "name": "Demo Admin", "department": "Operations", "is_active": true}
+    {"id": 3, "username": "demoadmin", "email": "admin@workpulse.demo", "access_role": "admin", "employee_id": "", "name": "Demo Admin", "department": "Operations", "is_active": true},
+    {"id": 4, "username": "nisha.patel", "email": "nisha@workpulse.demo", "access_role": "manager", "employee_id": "EMP004", "name": "Nisha Patel", "department": "People Operations", "is_active": true},
+    {"id": 5, "username": "vikram.singh", "email": "vikram@workpulse.demo", "access_role": "employee", "employee_id": "EMP007", "name": "Vikram Singh", "department": "Engineering", "is_active": true},
+    {"id": 6, "username": "rahul.verma", "email": "rahul@workpulse.demo", "access_role": "employee", "employee_id": "EMP012", "name": "Rahul Verma", "department": "Engineering", "is_active": false}
   ],
   "audit": [
     {"id": 1, "actor": "demoadmin", "action": "update", "entity": "project", "entity_id": "1", "summary": "Updated project Payroll Revamp", "metadata": {}, "created_at": "2026-06-11T12:05:00Z"},
     {"id": 2, "actor": "demomanager", "action": "create", "entity": "work_log", "entity_id": "9", "summary": "Created team timesheet", "metadata": {}, "created_at": "2026-06-10T13:20:00Z"},
-    {"id": 3, "actor": "demouser", "action": "mark_attendance", "entity": "attendance", "entity_id": "7", "summary": "Marked attendance for Aarav Sharma", "metadata": {}, "created_at": "2026-06-11T04:00:00Z"}
+    {"id": 3, "actor": "demouser", "action": "mark_attendance", "entity": "attendance", "entity_id": "7", "summary": "Marked attendance for Aarav Sharma", "metadata": {}, "created_at": "2026-06-11T04:00:00Z"},
+    {"id": 4, "actor": "demoadmin", "action": "create", "entity": "employee", "entity_id": "EMP011", "summary": "Created employee Sana Sheikh", "metadata": {}, "created_at": "2026-06-09T10:10:00Z"},
+    {"id": 5, "actor": "demomanager", "action": "update", "entity": "work_log", "entity_id": "19", "summary": "Updated timesheet for Vikram Singh", "metadata": {}, "created_at": "2026-06-11T13:45:00Z"},
+    {"id": 6, "actor": "demoadmin", "action": "create", "entity": "user", "entity_id": "5", "summary": "Created user vikram.singh", "metadata": {}, "created_at": "2026-06-08T08:30:00Z"}
   ]
 }

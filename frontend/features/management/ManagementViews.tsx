@@ -5,9 +5,11 @@ import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 
 import {
+  deleteAttendance,
   deleteEmployee,
   deleteLog,
   deleteProject,
+  deleteUser,
   getAttendance,
   getAuditLogs,
   getEmployees,
@@ -20,8 +22,11 @@ import {
   saveEmployee,
   saveLog,
   saveProject,
+  updateAttendance,
   updateEmployee,
-  updateProject
+  updateLog,
+  updateProject,
+  updateUser
 } from "@/lib/api";
 import type { Attendance, AuditLog, AuthUser, Employee, Filters, OptionsPayload, Project, UserSummary, WorkLog } from "@/types/api";
 
@@ -336,6 +341,8 @@ function ProjectsPanel({ token, setMessage, afterChange }: Pick<ManagementProps,
 
 function UsersPanel({ token, options, setMessage, afterChange }: Pick<ManagementProps, "token" | "options" | "setMessage" | "afterChange">) {
   const [users, setUsers] = useState<UserSummary[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [draftUser, setDraftUser] = useState<UserSummary | null>(null);
 
   async function load() {
     setUsers(await getUsers(token));
@@ -356,6 +363,48 @@ function UsersPanel({ token, options, setMessage, afterChange }: Pick<Management
       setMessage("User created.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not create user.");
+    }
+  }
+
+  function startEditing(user: UserSummary) {
+    setEditingId(user.id);
+    setDraftUser({ ...user });
+  }
+
+  function updateDraft(key: keyof UserSummary, value: string | boolean) {
+    setDraftUser((current) => (current ? { ...current, [key]: value } : current));
+  }
+
+  async function saveInlineUser() {
+    if (!draftUser) return;
+    try {
+      await updateUser(token, draftUser.id, {
+        username: draftUser.username,
+        email: draftUser.email,
+        access_role: draftUser.access_role,
+        employee_id: draftUser.employee_id,
+        name: draftUser.name,
+        department: draftUser.department,
+        is_active: String(draftUser.is_active)
+      });
+      setEditingId(null);
+      setDraftUser(null);
+      await load();
+      afterChange();
+      setMessage("User updated.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not update user.");
+    }
+  }
+
+  async function remove(id: number) {
+    try {
+      await deleteUser(token, id);
+      await load();
+      afterChange();
+      setMessage("User deleted.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not delete user.");
     }
   }
 
@@ -384,8 +433,39 @@ function UsersPanel({ token, options, setMessage, afterChange }: Pick<Management
         <header><div className="panel-title"><Users size={18} /><h2>Users</h2></div></header>
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Username</th><th>Name</th><th>Access</th><th>Employee</th><th>Department</th><th>Status</th></tr></thead>
-            <tbody>{users.map((row) => <tr key={row.id}><td>{row.username}</td><td>{row.name}</td><td>{row.access_role}</td><td>{row.employee_id}</td><td>{row.department}</td><td>{row.is_active ? "Active" : "Disabled"}</td></tr>)}</tbody>
+            <thead><tr><th>Username</th><th>Name</th><th>Email</th><th>Access</th><th>Employee</th><th>Department</th><th>Status</th><th></th></tr></thead>
+            <tbody>{users.map((row) => (
+              <tr key={row.id}>
+                {editingId === row.id && draftUser ? (
+                  <>
+                    <td><input aria-label="Username" value={draftUser.username} onChange={(event) => updateDraft("username", event.target.value)} /></td>
+                    <td><input aria-label="Name" value={draftUser.name} onChange={(event) => updateDraft("name", event.target.value)} /></td>
+                    <td><input aria-label="Email" type="email" value={draftUser.email} onChange={(event) => updateDraft("email", event.target.value)} /></td>
+                    <td><select aria-label="Access role" value={draftUser.access_role} onChange={(event) => updateDraft("access_role", event.target.value)}><option value="employee">Employee</option><option value="manager">Manager</option><option value="admin">Admin</option></select></td>
+                    <td><input aria-label="Employee ID" value={draftUser.employee_id} onChange={(event) => updateDraft("employee_id", event.target.value)} /></td>
+                    <td><input aria-label="Department" value={draftUser.department} onChange={(event) => updateDraft("department", event.target.value)} /></td>
+                    <td><select aria-label="User status" value={String(draftUser.is_active)} onChange={(event) => updateDraft("is_active", event.target.value === "true")}><option value="true">Active</option><option value="false">Disabled</option></select></td>
+                  </>
+                ) : (
+                  <>
+                    <td>{row.username}</td><td>{row.name}</td><td>{row.email}</td><td>{row.access_role}</td><td>{row.employee_id}</td><td>{row.department}</td><td>{row.is_active ? "Active" : "Disabled"}</td>
+                  </>
+                )}
+                <td className="row-actions">
+                  {editingId === row.id ? (
+                    <>
+                      <button className="secondary-btn compact" type="button" onClick={saveInlineUser}><Save size={14} />Save</button>
+                      <button className="secondary-btn compact" type="button" onClick={() => { setEditingId(null); setDraftUser(null); }}><X size={14} />Cancel</button>
+                    </>
+                  ) : (
+                    <>
+                      <button className="secondary-btn compact" type="button" onClick={() => startEditing(row)}><Pencil size={14} />Edit</button>
+                      <button className="danger-btn" type="button" onClick={() => remove(row.id)}><Trash2 size={14} />Delete</button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}</tbody>
           </table>
         </div>
       </article>
@@ -416,6 +496,8 @@ function AuditPanel({ token, setMessage }: Pick<ManagementProps, "token" | "setM
 
 function LogsPanel({ filters, options, token, user, setMessage, afterChange }: Omit<ManagementProps, "active">) {
   const [logs, setLogs] = useState<WorkLog[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [draftLog, setDraftLog] = useState<WorkLog | null>(null);
 
   async function load() {
     setLogs(await getLogs(token, filters));
@@ -451,6 +533,38 @@ function LogsPanel({ filters, options, token, user, setMessage, afterChange }: O
       setMessage("Timesheet deleted.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not delete timesheet.");
+    }
+  }
+
+  function startEditing(log: WorkLog) {
+    setEditingId(log.id);
+    setDraftLog({ ...log });
+  }
+
+  function updateDraft(key: keyof WorkLog, value: string | number) {
+    setDraftLog((current) => (current ? { ...current, [key]: value } : current));
+  }
+
+  async function saveInlineLog() {
+    if (!draftLog) return;
+    try {
+      await updateLog(token, draftLog.id, {
+        employee_id: draftLog.employee?.employee_id || user.employee_id || "",
+        log_date: draftLog.log_date,
+        project: draftLog.project,
+        task_type: draftLog.task_type,
+        hours: draftLog.hours,
+        productivity_score: String(draftLog.productivity_score),
+        overtime_hours: draftLog.overtime_hours,
+        notes: draftLog.notes
+      });
+      setEditingId(null);
+      setDraftLog(null);
+      await load();
+      afterChange();
+      setMessage("Timesheet updated.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not update timesheet.");
     }
   }
 
@@ -500,12 +614,40 @@ function LogsPanel({ filters, options, token, user, setMessage, afterChange }: O
         </header>
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Date</th><th>Employee</th><th>Department</th><th>Project</th><th>Task</th><th>Hours</th><th>Score</th><th></th></tr></thead>
+            <thead><tr><th>Date</th><th>Employee</th><th>Department</th><th>Project</th><th>Task</th><th>Hours</th><th>Score</th><th>Overtime</th><th>Notes</th><th></th></tr></thead>
             <tbody>
               {logs.map((log) => (
                 <tr key={log.id}>
-                  <td>{log.log_date}</td><td>{log.name}</td><td>{log.department}</td><td>{log.project}</td><td>{log.task_type}</td><td>{log.hours}</td><td>{log.productivity_score}</td>
-                  <td><button className="danger-btn" type="button" onClick={() => remove(log.id)}><Trash2 size={14} />Delete</button></td>
+                  {editingId === log.id && draftLog ? (
+                    <>
+                      <td><input aria-label="Log date" type="date" value={draftLog.log_date} onChange={(event) => updateDraft("log_date", event.target.value)} /></td>
+                      <td>{log.name}</td>
+                      <td>{log.department}</td>
+                      <td><input aria-label="Project" value={draftLog.project} onChange={(event) => updateDraft("project", event.target.value)} /></td>
+                      <td><input aria-label="Task" value={draftLog.task_type} onChange={(event) => updateDraft("task_type", event.target.value)} /></td>
+                      <td><input aria-label="Hours" type="number" step="0.25" min="0" max="24" value={draftLog.hours} onChange={(event) => updateDraft("hours", event.target.value)} /></td>
+                      <td><input aria-label="Productivity" type="number" min="0" max="100" value={draftLog.productivity_score} onChange={(event) => updateDraft("productivity_score", Number(event.target.value))} /></td>
+                      <td><input aria-label="Overtime" type="number" step="0.25" min="0" max="24" value={draftLog.overtime_hours} onChange={(event) => updateDraft("overtime_hours", event.target.value)} /></td>
+                      <td><input aria-label="Notes" value={draftLog.notes} onChange={(event) => updateDraft("notes", event.target.value)} /></td>
+                    </>
+                  ) : (
+                    <>
+                      <td>{log.log_date}</td><td>{log.name}</td><td>{log.department}</td><td>{log.project}</td><td>{log.task_type}</td><td>{log.hours}</td><td>{log.productivity_score}</td><td>{log.overtime_hours}</td><td>{log.notes}</td>
+                    </>
+                  )}
+                  <td className="row-actions">
+                    {editingId === log.id ? (
+                      <>
+                        <button className="secondary-btn compact" type="button" onClick={saveInlineLog}><Save size={14} />Save</button>
+                        <button className="secondary-btn compact" type="button" onClick={() => { setEditingId(null); setDraftLog(null); }}><X size={14} />Cancel</button>
+                      </>
+                    ) : (
+                      <>
+                        <button className="secondary-btn compact" type="button" onClick={() => startEditing(log)}><Pencil size={14} />Edit</button>
+                        <button className="danger-btn" type="button" onClick={() => remove(log.id)}><Trash2 size={14} />Delete</button>
+                      </>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -518,6 +660,8 @@ function LogsPanel({ filters, options, token, user, setMessage, afterChange }: O
 
 function AttendancePanel({ filters, options, token, user, setMessage, afterChange }: Omit<ManagementProps, "active">) {
   const [rows, setRows] = useState<Attendance[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [draftAttendance, setDraftAttendance] = useState<Attendance | null>(null);
 
   async function load() {
     setRows(await getAttendance(token, filters));
@@ -559,6 +703,47 @@ function AttendancePanel({ filters, options, token, user, setMessage, afterChang
     }
   }
 
+  function startEditing(row: Attendance) {
+    setEditingId(row.id);
+    setDraftAttendance({ ...row });
+  }
+
+  function updateDraft(key: keyof Attendance, value: string | number | null) {
+    setDraftAttendance((current) => (current ? { ...current, [key]: value } : current));
+  }
+
+  async function saveInlineAttendance() {
+    if (!draftAttendance) return;
+    try {
+      await updateAttendance(token, draftAttendance.id, {
+        employee_id: draftAttendance.employee?.employee_id || user.employee_id || "",
+        work_date: draftAttendance.work_date,
+        status: draftAttendance.status,
+        check_in: draftAttendance.check_in || "",
+        check_out: draftAttendance.check_out || "",
+        late_minutes: String(draftAttendance.late_minutes)
+      });
+      setEditingId(null);
+      setDraftAttendance(null);
+      await load();
+      afterChange();
+      setMessage("Attendance updated.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not update attendance.");
+    }
+  }
+
+  async function remove(id: number) {
+    try {
+      await deleteAttendance(token, id);
+      await load();
+      afterChange();
+      setMessage("Attendance deleted.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not delete attendance.");
+    }
+  }
+
   return (
     <section className="management-grid">
       {user.role === "employee" && (
@@ -579,11 +764,38 @@ function AttendancePanel({ filters, options, token, user, setMessage, afterChang
         </header>
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Date</th><th>Employee</th><th>Department</th><th>Status</th><th>Check in</th><th>Check out</th><th>Late</th></tr></thead>
+            <thead><tr><th>Date</th><th>Employee</th><th>Department</th><th>Status</th><th>Check in</th><th>Check out</th><th>Late</th><th></th></tr></thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id}>
-                  <td>{row.work_date}</td><td>{row.name}</td><td>{row.department}</td><td>{row.status}</td><td>{row.check_in || ""}</td><td>{row.check_out || ""}</td><td>{row.late_minutes}</td>
+                  {editingId === row.id && draftAttendance ? (
+                    <>
+                      <td><input aria-label="Work date" type="date" value={draftAttendance.work_date} onChange={(event) => updateDraft("work_date", event.target.value)} /></td>
+                      <td>{row.name}</td>
+                      <td>{row.department}</td>
+                      <td><select aria-label="Attendance status" value={draftAttendance.status} onChange={(event) => updateDraft("status", event.target.value)}><option>Present</option><option>Leave</option><option>Absent</option></select></td>
+                      <td><input aria-label="Check in" type="time" value={draftAttendance.check_in?.slice(0, 5) || ""} onChange={(event) => updateDraft("check_in", event.target.value || null)} /></td>
+                      <td><input aria-label="Check out" type="time" value={draftAttendance.check_out?.slice(0, 5) || ""} onChange={(event) => updateDraft("check_out", event.target.value || null)} /></td>
+                      <td><input aria-label="Late minutes" type="number" min="0" value={draftAttendance.late_minutes} onChange={(event) => updateDraft("late_minutes", Number(event.target.value))} /></td>
+                    </>
+                  ) : (
+                    <>
+                      <td>{row.work_date}</td><td>{row.name}</td><td>{row.department}</td><td>{row.status}</td><td>{row.check_in || ""}</td><td>{row.check_out || ""}</td><td>{row.late_minutes}</td>
+                    </>
+                  )}
+                  <td className="row-actions">
+                    {editingId === row.id ? (
+                      <>
+                        <button className="secondary-btn compact" type="button" onClick={saveInlineAttendance}><Save size={14} />Save</button>
+                        <button className="secondary-btn compact" type="button" onClick={() => { setEditingId(null); setDraftAttendance(null); }}><X size={14} />Cancel</button>
+                      </>
+                    ) : (
+                      <>
+                        <button className="secondary-btn compact" type="button" onClick={() => startEditing(row)}><Pencil size={14} />Edit</button>
+                        <button className="danger-btn" type="button" onClick={() => remove(row.id)}><Trash2 size={14} />Delete</button>
+                      </>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

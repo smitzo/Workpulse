@@ -60,10 +60,12 @@ npm run start
 
 ## 4. Demo Data
 
-The Employee, Manager, and Admin preview buttons use bundled frontend JSON and
-work without the backend. Normal login, signup, and production records still use
-the Django API. Run `seed_demo` only when you intentionally want sample records
-inside the database.
+The Demo Employee, Demo Manager, and Demo Admin preview buttons use bundled
+frontend JSON and work without the backend. Create, update, and delete actions in
+these workspaces persist to browser `localStorage`, not the database. This keeps
+the UI usable while a free-tier Render backend is sleeping after inactivity.
+Normal login, signup, and production records still use the Django API. Run
+`seed_demo` only when you intentionally want sample records inside the database.
 
 ## 5. Production Checklist
 

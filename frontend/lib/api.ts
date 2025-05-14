@@ -17,9 +17,11 @@ import {
   localAuditLogs,
   localCreateUser,
   localDashboard,
+  localDeleteAttendance,
   localDeleteEmployee,
   localDeleteLog,
   localDeleteProject,
+  localDeleteUser,
   localDemoLogin,
   localEmployees,
   localInsights,
@@ -32,8 +34,11 @@ import {
   localSaveEmployee,
   localSaveLog,
   localSaveProject,
+  localUpdateAttendance,
   localUpdateEmployee,
+  localUpdateLog,
   localUpdateProject,
+  localUpdateUser,
   localUsers
 } from "@/lib/localDemo";
 
@@ -151,7 +156,7 @@ export function getEmployees(token: string) {
 }
 
 export function saveEmployee(token: string, payload: Record<string, string>) {
-  if (isLocalDemoToken(token)) return Promise.resolve(localSaveEmployee(payload));
+  if (isLocalDemoToken(token)) return Promise.resolve(localSaveEmployee(token, payload));
   return apiFetch<Employee>("/employees/", {
     method: "POST",
     token,
@@ -160,7 +165,7 @@ export function saveEmployee(token: string, payload: Record<string, string>) {
 }
 
 export function updateEmployee(token: string, employeeId: string, payload: Record<string, string>) {
-  if (isLocalDemoToken(token)) return Promise.resolve(localUpdateEmployee(employeeId, payload));
+  if (isLocalDemoToken(token)) return Promise.resolve(localUpdateEmployee(token, employeeId, payload));
   return apiFetch<Employee>(`/employees/${employeeId}/`, {
     method: "PATCH",
     token,
@@ -170,7 +175,7 @@ export function updateEmployee(token: string, employeeId: string, payload: Recor
 
 export function deleteEmployee(token: string, employeeId: string) {
   if (isLocalDemoToken(token)) {
-    localDeleteEmployee(employeeId);
+    localDeleteEmployee(token, employeeId);
     return Promise.resolve();
   }
   return apiFetch<void>(`/employees/${employeeId}/`, { method: "DELETE", token });
@@ -193,10 +198,19 @@ export function saveLog(token: string, payload: Record<string, string>) {
 
 export function deleteLog(token: string, id: number) {
   if (isLocalDemoToken(token)) {
-    localDeleteLog(id);
+    localDeleteLog(token, id);
     return Promise.resolve();
   }
   return apiFetch<void>(`/logs/${id}/`, { method: "DELETE", token });
+}
+
+export function updateLog(token: string, id: number, payload: Record<string, string>) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localUpdateLog(token, id, payload));
+  return apiFetch<WorkLog>(`/logs/${id}/`, {
+    method: "PATCH",
+    token,
+    body: JSON.stringify(payload)
+  });
 }
 
 export function getAttendance(token: string, filters: Filters) {
@@ -214,6 +228,23 @@ export function saveAttendance(token: string, payload: Record<string, string>) {
   });
 }
 
+export function updateAttendance(token: string, id: number, payload: Record<string, string>) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localUpdateAttendance(token, id, payload));
+  return apiFetch<Attendance>(`/attendance/${id}/`, {
+    method: "PATCH",
+    token,
+    body: JSON.stringify(payload)
+  });
+}
+
+export function deleteAttendance(token: string, id: number) {
+  if (isLocalDemoToken(token)) {
+    localDeleteAttendance(token, id);
+    return Promise.resolve();
+  }
+  return apiFetch<void>(`/attendance/${id}/`, { method: "DELETE", token });
+}
+
 export function markAttendanceToday(token: string) {
   if (isLocalDemoToken(token)) return Promise.resolve(localMarkAttendanceToday(token));
   return apiFetch<Attendance>("/attendance/mark-today/", { method: "POST", token });
@@ -225,7 +256,7 @@ export function getProjects(token: string) {
 }
 
 export function saveProject(token: string, payload: Record<string, string>) {
-  if (isLocalDemoToken(token)) return Promise.resolve(localSaveProject(payload));
+  if (isLocalDemoToken(token)) return Promise.resolve(localSaveProject(token, payload));
   return apiFetch<Project>("/projects/", {
     method: "POST",
     token,
@@ -234,7 +265,7 @@ export function saveProject(token: string, payload: Record<string, string>) {
 }
 
 export function updateProject(token: string, id: number, payload: Record<string, string>) {
-  if (isLocalDemoToken(token)) return Promise.resolve(localUpdateProject(id, payload));
+  if (isLocalDemoToken(token)) return Promise.resolve(localUpdateProject(token, id, payload));
   return apiFetch<Project>(`/projects/${id}/`, {
     method: "PATCH",
     token,
@@ -244,7 +275,7 @@ export function updateProject(token: string, id: number, payload: Record<string,
 
 export function deleteProject(token: string, id: number) {
   if (isLocalDemoToken(token)) {
-    localDeleteProject(id);
+    localDeleteProject(token, id);
     return Promise.resolve();
   }
   return apiFetch<void>(`/projects/${id}/`, { method: "DELETE", token });
@@ -256,12 +287,29 @@ export function getUsers(token: string) {
 }
 
 export function createUser(token: string, payload: Record<string, string>) {
-  if (isLocalDemoToken(token)) return Promise.resolve(localCreateUser(payload));
+  if (isLocalDemoToken(token)) return Promise.resolve(localCreateUser(token, payload));
   return apiFetch<AuthPayload["user"]>("/users/", {
     method: "POST",
     token,
     body: JSON.stringify(payload)
   });
+}
+
+export function updateUser(token: string, id: number, payload: Record<string, string>) {
+  if (isLocalDemoToken(token)) return Promise.resolve(localUpdateUser(token, id, payload));
+  return apiFetch<UserSummary>(`/users/${id}/`, {
+    method: "PATCH",
+    token,
+    body: JSON.stringify(payload)
+  });
+}
+
+export function deleteUser(token: string, id: number) {
+  if (isLocalDemoToken(token)) {
+    localDeleteUser(token, id);
+    return Promise.resolve();
+  }
+  return apiFetch<void>(`/users/${id}/`, { method: "DELETE", token });
 }
 
 export function getAuditLogs(token: string) {

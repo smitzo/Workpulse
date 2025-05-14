@@ -16,12 +16,17 @@ import type {
 } from "@/types/api";
 
 const TOKEN_PREFIX = "local-demo:";
-const employees = structuredClone(demoData.employees) as Employee[];
-const projects = structuredClone(demoData.projects) as Project[];
-const users = structuredClone(demoData.users) as UserSummary[];
-const auditLogs = structuredClone(demoData.audit) as AuditLog[];
-const rawLogs = structuredClone(demoData.logs) as Array<Omit<WorkLog, "name" | "department" | "employee"> & { employee_id: string }>;
-const rawAttendance = structuredClone(demoData.attendance) as Array<Omit<Attendance, "name" | "department" | "employee"> & { employee_id: string }>;
+const STORAGE_KEY = "workpulse-demo-data-v2";
+type DemoWorkLog = Omit<WorkLog, "name" | "department" | "employee"> & { employee_id: string };
+type DemoAttendance = Omit<Attendance, "name" | "department" | "employee"> & { employee_id: string };
+
+let employees = structuredClone(demoData.employees) as Employee[];
+let projects = structuredClone(demoData.projects) as Project[];
+let users = structuredClone(demoData.users) as UserSummary[];
+let auditLogs = structuredClone(demoData.audit) as AuditLog[];
+let rawLogs = structuredClone(demoData.logs) as DemoWorkLog[];
+let rawAttendance = structuredClone(demoData.attendance) as DemoAttendance[];
+let hydrated = false;
 
 const roleUsers: Record<UserRole, AuthUser> = {
   employee: {
@@ -50,6 +55,41 @@ const roleUsers: Record<UserRole, AuthUser> = {
   }
 };
 
+function hydrateDemoData() {
+  if (hydrated) return;
+  hydrated = true;
+  if (typeof window === "undefined") return;
+
+  try {
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    const state = JSON.parse(saved) as {
+      employees: Employee[];
+      projects: Project[];
+      users: UserSummary[];
+      auditLogs: AuditLog[];
+      rawLogs: DemoWorkLog[];
+      rawAttendance: DemoAttendance[];
+    };
+    employees = state.employees;
+    projects = state.projects;
+    users = state.users;
+    auditLogs = state.auditLogs;
+    rawLogs = state.rawLogs;
+    rawAttendance = state.rawAttendance;
+  } catch {
+    window.localStorage.removeItem(STORAGE_KEY);
+  }
+}
+
+function persistDemoData() {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ employees, projects, users, auditLogs, rawLogs, rawAttendance })
+  );
+}
+
 export function isLocalDemoToken(token?: string | null) {
   return Boolean(token?.startsWith(TOKEN_PREFIX));
 }
@@ -60,6 +100,7 @@ function roleFromToken(token: string): UserRole {
 }
 
 function allowedEmployeeIds(token: string) {
+  hydrateDemoData();
   const role = roleFromToken(token);
   if (role === "admin") {
     return employees.map((employee) => employee.employee_id);
@@ -71,7 +112,21 @@ function allowedEmployeeIds(token: string) {
 }
 
 function employeeById(employeeId: string) {
+  hydrateDemoData();
   return employees.find((employee) => employee.employee_id === employeeId);
+}
+
+function recordAudit(token: string, action: string, entity: string, entityId: string | number, summary: string) {
+  auditLogs.unshift({
+    id: Math.max(0, ...auditLogs.map((log) => log.id)) + 1,
+    actor: roleUsers[roleFromToken(token)].username,
+    action,
+    entity,
+    entity_id: String(entityId),
+    summary,
+    metadata: { source: "browser-demo" },
+    created_at: new Date().toISOString()
+  });
 }
 
 function matchesFilters(
@@ -111,10 +166,12 @@ function average(values: number[]) {
 }
 
 export function localDemoLogin(role: UserRole): AuthPayload {
+  hydrateDemoData();
   return { token: `${TOKEN_PREFIX}${role}`, user: roleUsers[role] };
 }
 
 export function localOptions(token: string): OptionsPayload {
+  hydrateDemoData();
   const scopedEmployees = employees.filter((employee) => allowedEmployeeIds(token).includes(employee.employee_id));
   return {
     departments: ["All", ...new Set(scopedEmployees.map((employee) => employee.department))],
@@ -127,16 +184,19 @@ export function localOptions(token: string): OptionsPayload {
 }
 
 export function localLogs(token: string, filters: Filters): WorkLog[] {
+  hydrateDemoData();
   const allowed = allowedEmployeeIds(token);
   return rawLogs.filter((row) => allowed.includes(row.employee_id) && matchesFilters(row, filters)).map(enrichLog);
 }
 
 export function localAttendance(token: string, filters: Filters): Attendance[] {
+  hydrateDemoData();
   const allowed = allowedEmployeeIds(token);
   return rawAttendance.filter((row) => allowed.includes(row.employee_id) && matchesFilters(row, filters)).map(enrichAttendance);
 }
 
 export function localDashboard(token: string, filters: Filters): Dashboard {
+  hydrateDemoData();
   const scopedEmployees = employees.filter((employee) => allowedEmployeeIds(token).includes(employee.employee_id));
   const logs = localLogs(token, filters);
   const attendance = localAttendance(token, filters);
@@ -225,28 +285,48 @@ export function localInsights(token: string, filters: Filters): InsightsPayload 
 }
 
 export function localEmployees(token: string) {
+  hydrateDemoData();
   return employees.filter((employee) => allowedEmployeeIds(token).includes(employee.employee_id));
 }
 
-export function localSaveEmployee(payload: Record<string, string>) {
-  const employee = payload as unknown as Employee;
+export function localSaveEmployee(token: string, payload: Record<string, string>) {
+  hydrateDemoData();
+  if (employees.some((employee) => employee.employee_id === payload.employee_id)) {
+    throw new Error(`Employee ${payload.employee_id} already exists.`);
+  }
+  const employee = { ...payload, manager_employee_id: payload.manager_employee_id || null } as unknown as Employee;
   employees.push(employee);
+  recordAudit(token, "create", "employee", employee.employee_id, `Created employee ${employee.name}`);
+  persistDemoData();
   return employee;
 }
 
-export function localUpdateEmployee(employeeId: string, payload: Record<string, string>) {
+export function localUpdateEmployee(token: string, employeeId: string, payload: Record<string, string>) {
+  hydrateDemoData();
   const index = employees.findIndex((employee) => employee.employee_id === employeeId);
+  if (index < 0) throw new Error("Employee not found.");
   employees[index] = { ...employees[index], ...payload };
+  recordAudit(token, "update", "employee", employeeId, `Updated employee ${employees[index].name}`);
+  persistDemoData();
   return employees[index];
 }
 
-export function localDeleteEmployee(employeeId: string) {
+export function localDeleteEmployee(token: string, employeeId: string) {
+  hydrateDemoData();
   const index = employees.findIndex((employee) => employee.employee_id === employeeId);
-  if (index >= 0) employees.splice(index, 1);
+  if (index < 0) throw new Error("Employee not found.");
+  const [employee] = employees.splice(index, 1);
+  rawLogs = rawLogs.filter((log) => log.employee_id !== employeeId);
+  rawAttendance = rawAttendance.filter((row) => row.employee_id !== employeeId);
+  users = users.filter((user) => user.employee_id !== employeeId);
+  recordAudit(token, "delete", "employee", employeeId, `Deleted employee ${employee.name}`);
+  persistDemoData();
 }
 
 export function localSaveLog(token: string, payload: Record<string, string>) {
+  hydrateDemoData();
   const employeeId = payload.employee_id || roleUsers[roleFromToken(token)].employee_id || "EMP001";
+  if (!employeeById(employeeId)) throw new Error("Employee not found.");
   const row = {
     id: Math.max(0, ...rawLogs.map((log) => log.id)) + 1,
     employee_id: employeeId,
@@ -259,16 +339,39 @@ export function localSaveLog(token: string, payload: Record<string, string>) {
     notes: payload.notes || ""
   };
   rawLogs.unshift(row);
+  recordAudit(token, "create", "work_log", row.id, `Created timesheet for ${employeeById(employeeId)?.name}`);
+  persistDemoData();
   return enrichLog(row);
 }
 
-export function localDeleteLog(id: number) {
+export function localUpdateLog(token: string, id: number, payload: Record<string, string>) {
+  hydrateDemoData();
   const index = rawLogs.findIndex((log) => log.id === id);
-  if (index >= 0) rawLogs.splice(index, 1);
+  if (index < 0) throw new Error("Timesheet not found.");
+  rawLogs[index] = {
+    ...rawLogs[index],
+    ...payload,
+    employee_id: payload.employee_id || rawLogs[index].employee_id,
+    productivity_score: Number(payload.productivity_score ?? rawLogs[index].productivity_score)
+  };
+  recordAudit(token, "update", "work_log", id, `Updated timesheet for ${employeeById(rawLogs[index].employee_id)?.name}`);
+  persistDemoData();
+  return enrichLog(rawLogs[index]);
+}
+
+export function localDeleteLog(token: string, id: number) {
+  hydrateDemoData();
+  const index = rawLogs.findIndex((log) => log.id === id);
+  if (index < 0) throw new Error("Timesheet not found.");
+  const [row] = rawLogs.splice(index, 1);
+  recordAudit(token, "delete", "work_log", id, `Deleted timesheet for ${employeeById(row.employee_id)?.name}`);
+  persistDemoData();
 }
 
 export function localSaveAttendance(token: string, payload: Record<string, string>) {
+  hydrateDemoData();
   const employeeId = payload.employee_id || roleUsers[roleFromToken(token)].employee_id || "EMP001";
+  if (!employeeById(employeeId)) throw new Error("Employee not found.");
   const existing = rawAttendance.find((row) => row.employee_id === employeeId && row.work_date === payload.work_date);
   const values = {
     employee_id: employeeId,
@@ -280,11 +383,42 @@ export function localSaveAttendance(token: string, payload: Record<string, strin
   };
   if (existing) {
     Object.assign(existing, values);
+    recordAudit(token, "update", "attendance", existing.id, `Updated attendance for ${employeeById(employeeId)?.name}`);
+    persistDemoData();
     return enrichAttendance(existing);
   }
   const row = { id: Math.max(0, ...rawAttendance.map((item) => item.id)) + 1, ...values };
   rawAttendance.unshift(row);
+  recordAudit(token, "create", "attendance", row.id, `Saved attendance for ${employeeById(employeeId)?.name}`);
+  persistDemoData();
   return enrichAttendance(row);
+}
+
+export function localUpdateAttendance(token: string, id: number, payload: Record<string, string>) {
+  hydrateDemoData();
+  const index = rawAttendance.findIndex((row) => row.id === id);
+  if (index < 0) throw new Error("Attendance record not found.");
+  rawAttendance[index] = {
+    ...rawAttendance[index],
+    ...payload,
+    employee_id: payload.employee_id || rawAttendance[index].employee_id,
+    status: (payload.status || rawAttendance[index].status) as Attendance["status"],
+    check_in: payload.check_in || null,
+    check_out: payload.check_out || null,
+    late_minutes: Number(payload.late_minutes ?? rawAttendance[index].late_minutes)
+  };
+  recordAudit(token, "update", "attendance", id, `Updated attendance for ${employeeById(rawAttendance[index].employee_id)?.name}`);
+  persistDemoData();
+  return enrichAttendance(rawAttendance[index]);
+}
+
+export function localDeleteAttendance(token: string, id: number) {
+  hydrateDemoData();
+  const index = rawAttendance.findIndex((row) => row.id === id);
+  if (index < 0) throw new Error("Attendance record not found.");
+  const [row] = rawAttendance.splice(index, 1);
+  recordAudit(token, "delete", "attendance", id, `Deleted attendance for ${employeeById(row.employee_id)?.name}`);
+  persistDemoData();
 }
 
 export function localMarkAttendanceToday(token: string) {
@@ -299,10 +433,12 @@ export function localMarkAttendanceToday(token: string) {
 }
 
 export function localProjects() {
+  hydrateDemoData();
   return projects;
 }
 
-export function localSaveProject(payload: Record<string, string>) {
+export function localSaveProject(token: string, payload: Record<string, string>) {
+  hydrateDemoData();
   const now = new Date().toISOString();
   const project: Project = {
     id: Math.max(0, ...projects.map((item) => item.id)) + 1,
@@ -314,25 +450,40 @@ export function localSaveProject(payload: Record<string, string>) {
     updated_at: now
   };
   projects.push(project);
+  recordAudit(token, "create", "project", project.id, `Created project ${project.name}`);
+  persistDemoData();
   return project;
 }
 
-export function localUpdateProject(id: number, payload: Record<string, string>) {
+export function localUpdateProject(token: string, id: number, payload: Record<string, string>) {
+  hydrateDemoData();
   const index = projects.findIndex((project) => project.id === id);
+  if (index < 0) throw new Error("Project not found.");
   projects[index] = { ...projects[index], ...payload, status: payload.status as Project["status"], updated_at: new Date().toISOString() };
+  recordAudit(token, "update", "project", id, `Updated project ${projects[index].name}`);
+  persistDemoData();
   return projects[index];
 }
 
-export function localDeleteProject(id: number) {
+export function localDeleteProject(token: string, id: number) {
+  hydrateDemoData();
   const index = projects.findIndex((project) => project.id === id);
-  if (index >= 0) projects.splice(index, 1);
+  if (index < 0) throw new Error("Project not found.");
+  const [project] = projects.splice(index, 1);
+  recordAudit(token, "delete", "project", id, `Deleted project ${project.name}`);
+  persistDemoData();
 }
 
 export function localUsers() {
+  hydrateDemoData();
   return users;
 }
 
-export function localCreateUser(payload: Record<string, string>): AuthUser {
+export function localCreateUser(token: string, payload: Record<string, string>): AuthUser {
+  hydrateDemoData();
+  if (users.some((user) => user.username === payload.username)) {
+    throw new Error(`Username ${payload.username} already exists.`);
+  }
   const user: UserSummary = {
     id: Math.max(0, ...users.map((item) => item.id)) + 1,
     username: payload.username,
@@ -344,6 +495,8 @@ export function localCreateUser(payload: Record<string, string>): AuthUser {
     is_active: true
   };
   users.push(user);
+  recordAudit(token, "create", "user", user.id, `Created user ${user.username}`);
+  persistDemoData();
   return {
     username: user.username,
     email: user.email,
@@ -354,7 +507,32 @@ export function localCreateUser(payload: Record<string, string>): AuthUser {
   };
 }
 
+export function localUpdateUser(token: string, id: number, payload: Record<string, string>) {
+  hydrateDemoData();
+  const index = users.findIndex((user) => user.id === id);
+  if (index < 0) throw new Error("User not found.");
+  users[index] = {
+    ...users[index],
+    ...payload,
+    access_role: (payload.access_role || users[index].access_role) as UserRole,
+    is_active: payload.is_active === undefined ? users[index].is_active : payload.is_active === "true"
+  };
+  recordAudit(token, "update", "user", id, `Updated user ${users[index].username}`);
+  persistDemoData();
+  return users[index];
+}
+
+export function localDeleteUser(token: string, id: number) {
+  hydrateDemoData();
+  const index = users.findIndex((user) => user.id === id);
+  if (index < 0) throw new Error("User not found.");
+  const [user] = users.splice(index, 1);
+  recordAudit(token, "delete", "user", id, `Deleted user ${user.username}`);
+  persistDemoData();
+}
+
 export function localAuditLogs() {
+  hydrateDemoData();
   return auditLogs;
 }
 

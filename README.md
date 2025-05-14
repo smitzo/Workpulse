@@ -9,7 +9,7 @@ dashboard with light and dark themes.
 - Django backend with modular analytics models, services, serializers, and API views.
 - Postgres-ready configuration through `DATABASE_URL`; Neon works with `sslmode=require`.
 - Token authentication, login, signup, and three frontend-only role previews.
-- Deterministic demo data for employees, work logs, attendance, projects, task groups, demo users, and ideal task times.
+- Comprehensive demo data for employees, work logs, attendance, projects, demo users, and ideal task times.
 - Next.js frontend with dashboard KPIs, charts, reports, employee management, timesheets, attendance, filters, and theme toggle.
 - Admin, manager, and employee scoping. Admins see all data, managers see direct reports, and employees are restricted to their own records.
 - Inline editing for employee and project list views.
@@ -17,9 +17,11 @@ dashboard with light and dark themes.
 
 ## Demo Access
 
-The login page includes Employee, Manager, and Admin workspace buttons. They load
-bundled frontend JSON and do not require backend access or credentials. Normal
-login and signup continue to use the Django API.
+The login page includes Demo Employee, Demo Manager, and Demo Admin workspace
+buttons. They load bundled frontend JSON and do not require backend access or
+credentials. Demo CRUD changes are stored in the browser with `localStorage`, so
+they survive refreshes without touching the database. Normal login and signup
+continue to use the Django API.
 
 ## Project Structure
 
